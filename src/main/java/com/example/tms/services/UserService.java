@@ -6,8 +6,11 @@ import com.example.tms.repository.entities.Role;
 import com.example.tms.repository.entities.User;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +20,10 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleService roleService;
+    private final Logger logger = LoggerFactory.getLogger("UserAuthenticationLog");
 
     public Optional<User> findByUsername(String username)
     {
@@ -41,7 +45,7 @@ public class UserService {
         user.setUsername(registrationUserDto.getUsername());
         user.setMail(registrationUserDto.getMail());
         user.setPassword(registrationUserDto.getPassword());
-        /*user.addRole(roleService.findByName("ROLE_UNCONFIRMED").orElseThrow());
+       /* user.addRole(roleService.findByName("ROLE_UNCONFIRMED").orElseThrow());
         mailService.sendMail(user.getMail(),
                 "Confirmation of given email address",
                 "Follow this link to confirm your email address:\n" +
