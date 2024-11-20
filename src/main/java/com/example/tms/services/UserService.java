@@ -68,15 +68,14 @@ public class UserService implements UserDetailsService {
         save(user);
     }
 
-    public ResponseEntity<?> ifUserExists(String login)
+    public boolean ifUserNotExists(String login)
     {
         try{
             User user = findByLogin(login).orElseThrow(() -> new UsernameNotFoundException("No such user!"));
-            return new ResponseEntity<>("You confirmed your mail!", HttpStatus.OK);
+            return false;
         } catch (UsernameNotFoundException e)
         {
-
-            return new ResponseEntity<>(new AppError("Access denied!"), HttpStatus.FORBIDDEN);
+            return true;
         }
     }
 

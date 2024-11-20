@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,16 +17,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/registration")
 public class AuthorizationController {
-    @Autowired
+
     private final AuthService authService;
 
     @PostMapping
-    public ResponseEntity<?> createNewUser(@RequestBody RegistrationUserDto registrationUserDto, HttpServletRequest request)
+    public ResponseEntity<?> registration(@RequestBody @Validated(RegistrationUserDto.registration.class) RegistrationUserDto registrationUserDto, HttpServletRequest request)
     {
-        return authService.createNewUser(registrationUserDto, request);
+        ResponseEntity<?> l = authService.createNewUser(registrationUserDto, request);
+        return l;
     }
-
-
 
 
 }

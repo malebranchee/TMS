@@ -18,24 +18,33 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.match.MockRestRequestMatchers;
 import org.springframework.test.web.client.response.MockRestResponseCreators;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
+import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON;
 
 
 @ContextConfiguration(classes = TmsApplicationTests.class)
 @RestClientTest(AuthorizationController.class)
 class TmsApplicationTests
 {
-
     @Test
     public void shouldReturnGoodResponse()
     {
         RestTemplate restTemplate = new RestTemplate();
-        HttpEntity<RegistrationUserDto> request = new HttpEntity<>(new RegistrationUserDto("pablo", "123", "123"));
-        ResponseEntity<?> response = restTemplate.postForEntity("http://localhost:8080/registration", request, UserDto.class);
+        //HttpEntity<RegistrationUserDto> request = new HttpEntity<>(new RegistrationUserDto("pablo", "123", "123"));
+        // ResponseEntity<?> response = restTemplate.postForEntity("http://localhost:8080/registration", request, UserDto.class);
 
-        Assertions.assertEquals(response.getStatusCode(), HttpStatus.UNAUTHORIZED);
+//        Assertions.assertEquals(response.getStatusCode(), HttpStatus.UNAUTHORIZED);
 
+        RestClient restClient = RestClient.create();
+        RegistrationUserDto registrationUserDto = new RegistrationUserDto("pablo", "123", "123");
+        ResponseEntity<Void> response = restClient.post()
+                .uri("http://localhost:8080/registration")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(registrationUserDto).retrieve().toBodilessEntity();
+
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
 /*
         UserDto userDto = (UserDto)response.getBody();
 

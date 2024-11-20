@@ -38,13 +38,11 @@ public class AuthenticationController {
     @PostMapping("/confirmed{login}")
     public String mailConfirm(@PathVariable String login)
     {
-        if (userService.ifUserExists(login).getStatusCode().equals(HttpStatus.FORBIDDEN))
+        if (userService.ifUserNotExists(login))
             return "redirect:/error";
 
         userService.addRole("ROLE_CONFIRMED", login);
         userService.deleteRole("ROLE_UNCONFIRMED", login);
         return "redirect:/api/auth/panel";
-
-
     }
 }

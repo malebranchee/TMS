@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -68,16 +67,16 @@ public class AuthService {
             return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(),
                     "Password mismatch"), HttpStatus.BAD_REQUEST);
         }
-        if (userService.findByLogin(registrationUserDto.getLogin()).isPresent()) {
-            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(),
-                    "A user with the same login is already exists"), HttpStatus.BAD_REQUEST);
-        }
+        if (userService.ifUserNotExists(registrationUserDto.getLogin())) {
 
-        registrationUserDto.setPassword(new BCryptPasswordEncoder()
-                .encode(registrationUserDto.getPassword()));
-        User user = userService.save(registrationUserDto);
-        logger.info("User {} signed up.", user.getLogin());
-        return ResponseEntity.ok(new UserDto(user.getId(), user.getLogin()));
+            registrationUserDto.setPassword(new BCryptPasswordEncoder()
+                    .encode(registrationUserDto.getPassword()));
+            User user = userService.save(registrationUserDto);
+            logger.info("User {} signed up.", user.getLogin());
+            return new ResponseEntity<>(new UserDto(user.getId(), user.getLogin()), HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(new AppError("Such user already exists!"), HttpStatus.BAD_REQUEST);
+        }
     }
 
 
