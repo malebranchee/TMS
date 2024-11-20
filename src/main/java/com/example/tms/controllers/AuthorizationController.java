@@ -1,7 +1,9 @@
 package com.example.tms.controllers;
 
 import com.example.tms.dtos.RegistrationUserDto;
+import com.example.tms.services.AuthService;
 import com.example.tms.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,15 +14,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/")
+@RequestMapping("/registration")
 public class AuthorizationController {
     @Autowired
-    private final UserService userService;
+    private final AuthService authService;
 
-    @PostMapping("/registration")
-    public ResponseEntity<?> createNewUser(@RequestBody RegistrationUserDto registrationUserDto)
+    @PostMapping
+    public ResponseEntity<?> createNewUser(@RequestBody RegistrationUserDto registrationUserDto, HttpServletRequest request)
     {
-        //
+        return authService.createNewUser(registrationUserDto, request);
     }
+
+
+
 
 }

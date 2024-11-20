@@ -25,8 +25,8 @@ public class User {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "username")
-    private String username;
+    @Column(name = "login")
+    private String login;
 
     @Column(name = "password")
     private String password;
@@ -34,8 +34,6 @@ public class User {
     @Transient
     private String confirmPassword;
 
-    @Column(name = "mail")
-    private String mail;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
@@ -67,7 +65,7 @@ public class User {
     @Override
     public String toString()
     {
-        return String.format("ID: %d, Username: %s, Mail: %s, Roles : %s", id, username, mail, roles.toString());
+        return String.format("ID: %d, Login: %s, Roles : %s", id, login,roles.toString());
     }
 
 }

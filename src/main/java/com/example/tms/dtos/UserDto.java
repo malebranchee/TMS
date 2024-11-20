@@ -2,14 +2,12 @@ package com.example.tms.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
-public class RegistrationUserDto implements Serializable {
+public class UserDto implements Serializable {
+    private Long id;
     private String login;
-    private String password;
-    private String confirmPassword;
 }
