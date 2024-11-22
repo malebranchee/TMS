@@ -1,6 +1,7 @@
 package com.example.tms.config;
 
 import com.example.tms.services.UserService;
+import com.example.tms.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,12 +31,14 @@ public class SecurityConfig {
 
 
     @Bean
-    protected SecurityFilterChain configuration(HttpSecurity httpSecurity) throws Exception {
+    protected SecurityFilterChain configuration(HttpSecurity httpSecurity, JwtUtils jwtUtils) throws Exception {
         httpSecurity
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers( "/api/info").authenticated()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().permitAll()
+                        .requestMatchers( "/api/v1/panel/**").authenticated()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .anyRequest().not().authenticated()
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

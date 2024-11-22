@@ -27,7 +27,6 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private final MailService mailService;
 
     public Optional<User> findByLogin(String username)
     {
@@ -38,16 +37,12 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    @Transactional
+
     public User save(RegistrationUserDto registrationUserDto) {
         User user = new User();
         user.setLogin(registrationUserDto.getLogin());
         user.setPassword(registrationUserDto.getPassword());
-        user.addRole(roleService.findByName("ROLE_UNCONFIRMED").orElseThrow());
-        mailService.sendMail(user.getLogin(),
-                "Confirmation of given email address",
-                "Follow this link to confirm your email address:\n" +
-                        "\thttp://localhost:8080/api/confirmed/" + user.getLogin());
+        user.addRole(roleService.findByName("ROLE_USER").orElseThrow());
         return userRepository.save(user);
     }
 
@@ -59,14 +54,6 @@ public class UserService implements UserDetailsService {
         save(user);
     }
 
-    @Transactional
-    public void deleteRole(String roleName, String login)
-    {
-        Role role = roleService.findByName(roleName).orElseThrow();
-        User user = findByLogin(login).orElseThrow();
-        user.deleteRole(role);
-        save(user);
-    }
 
     public boolean ifUserNotExists(String login)
     {

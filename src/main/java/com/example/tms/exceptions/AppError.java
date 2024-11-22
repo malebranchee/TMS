@@ -9,6 +9,7 @@ public class AppError {
     private String message;
     private Date timestamp;
 
+    public AppError(){};
     public AppError(int status, String message) {
         this.status = status;
         this.message = message;

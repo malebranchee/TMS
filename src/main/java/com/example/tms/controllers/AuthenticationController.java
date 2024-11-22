@@ -2,26 +2,25 @@ package com.example.tms.controllers;
 
 import com.example.tms.dtos.JwtRequest;
 import com.example.tms.dtos.RefreshTokenRequest;
+import com.example.tms.dtos.RegistrationUserDto;
 import com.example.tms.services.AuthService;
 import com.example.tms.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
-@Service
+@Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1")
 public class AuthenticationController {
     private final AuthService authService;
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping("/auth")
     public ResponseEntity<?> authorizeUser(@RequestBody JwtRequest authRequest, HttpServletRequest request)
     {
         return authService.createAuthToken(authRequest, request);
@@ -33,16 +32,10 @@ public class AuthenticationController {
         return authService.refreshToken(refreshTokenRequest);
     }
 
-
-
-    @PostMapping("/confirmed{login}")
-    public String mailConfirm(@PathVariable String login)
+    @PostMapping("/registration")
+    public ResponseEntity<?> registration(@RequestBody  RegistrationUserDto registrationUserDto, HttpServletRequest request)
     {
-        if (userService.ifUserNotExists(login))
-            return "redirect:/error";
-
-        userService.addRole("ROLE_CONFIRMED", login);
-        userService.deleteRole("ROLE_UNCONFIRMED", login);
-        return "redirect:/api/auth/panel";
+        return authService.createNewUser(registrationUserDto, request);
     }
+
 }
