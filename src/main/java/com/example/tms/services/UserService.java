@@ -1,7 +1,6 @@
 package com.example.tms.services;
 
 import com.example.tms.dtos.RegistrationUserDto;
-import com.example.tms.exceptions.AppError;
 import com.example.tms.repository.UserRepository;
 import com.example.tms.repository.entities.Role;
 import com.example.tms.repository.entities.User;
@@ -9,15 +8,11 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,10 +28,14 @@ public class UserService implements UserDetailsService {
         return userRepository.findByLogin(username);
     }
 
+    public Optional<User> findByNickname(String nickname)
+    {
+        return userRepository.findByNickname(nickname);
+    }
+
     public void save(User user) {
         userRepository.save(user);
     }
-
 
     public User save(RegistrationUserDto registrationUserDto) {
         User user = new User();
@@ -53,7 +52,6 @@ public class UserService implements UserDetailsService {
         user.addRole(role);
         save(user);
     }
-
 
     public boolean ifUserNotExists(String login)
     {
@@ -78,12 +76,6 @@ public class UserService implements UserDetailsService {
                 user.getRoles().stream().map(role ->
                                 new SimpleGrantedAuthority(role.getName()))
                         .collect(Collectors.toList())
-
         );
     }
-
-
-
-
-
 }

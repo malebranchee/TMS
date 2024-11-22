@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS users
 (
     id SERIAL PRIMARY KEY,
     login CHARACTER(30),
+    nickname CHARACTER(30),
     password CHARACTER(60)
 
 );

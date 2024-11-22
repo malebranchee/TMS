@@ -67,17 +67,4 @@ class AuthorizationTests
         Assertions.assertTrue(jwtResponseHttpEntity.hasBody());
 
     }
-
-    /*@Test
-    public void RefreshJWTTest_shouldReturnOkAndChangeToken()
-    {
-        String uri = "http://localhost:8080/api/v1/refresh";
-        RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest("eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1VTRVIiXSwic3ViIjoicGFibG8iLCJpYXQiOjE3MzIyNzUyOTIsImV4cCI6MTczMjI3NjE5Mn0.egYYvOuOnKZcrnF7hdoahCpmZkhS7OAbnMzut_VFHz1h1XkwLEEfZwJd0M_mPHV-");
-        ResponseEntity<?> response = restClient.post()
-                .uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(refreshTokenRequest).retrieve().toEntity(JwtResponse.class);
-        HttpEntity<JwtResponse> jwtResponseHttpEntity = new HttpEntity(response.getBody(), response.getHeaders());
-        Assertions.assertEquals(refreshTokenRequest.getToken(), jwtResponseHttpEntity.getBody().getToken());
-    }*/
 }

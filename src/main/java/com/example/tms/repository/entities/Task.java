@@ -2,7 +2,6 @@ package com.example.tms.repository.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.util.List;
 
 @Entity
@@ -26,7 +25,8 @@ public class Task {
     @Column(name = "priority")
     private String priority;
 
-    @Column(name = "comments") // Добавить связку с User (скорее всего будет хэш лист)
+    // todo: Добавить связку с User (скорее всего будет хэш лист)
+    @Column(name = "comments")
     private String comments;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -37,7 +37,7 @@ public class Task {
     )
     private List<User> executors;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinTable(name = "tasks_x_users", inverseJoinColumns = @JoinColumn(name = "author_id"))
     private User author;
 
@@ -45,7 +45,6 @@ public class Task {
     public String toString()
     {
         return String.format("ID: %d, Header: %s, Description: %s, Status: %s, Comments: %s," +
-                "Executors: %s, Author: %s", id, header, description, status, comments, executors.toString(), author.toString());
+                "Executors: %s, Author: %s", id, header, description, status, comments, executors.toString(), author.getNickname());
     }
-
 }
