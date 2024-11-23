@@ -19,9 +19,9 @@ public class AuthenticationController {
     private final UserService userService;
 
     @PostMapping("/auth")
-    public ResponseEntity<?> authorizeUser(@RequestBody JwtRequest authRequest, HttpServletRequest request)
+    public ResponseEntity<?> authorizeUser(@RequestBody JwtRequest authRequest)
     {
-        return authService.createAuthToken(authRequest, request);
+        return authService.createAuthToken(authRequest);
     }
 
     @PostMapping("/refresh")
@@ -31,9 +31,9 @@ public class AuthenticationController {
     }
 
     @PostMapping("/registration")
-    public ResponseEntity<?> registration(@RequestBody  RegistrationUserDto registrationUserDto, HttpServletRequest request)
+    public ResponseEntity<?> registration(@RequestBody  RegistrationUserDto registrationUserDto)
     {
-        return authService.createNewUser(registrationUserDto, request);
+        return authService.createNewUser(registrationUserDto);
     }
 
 }

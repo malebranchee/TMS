@@ -4,7 +4,6 @@ import com.example.tms.dtos.*;
 import com.example.tms.exceptions.AppError;
 import com.example.tms.repository.entities.User;
 import com.example.tms.utils.JwtUtils;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,7 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final DaoAuthenticationProvider daoAuthenticationProvider;
 
-    public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest authRequest, HttpServletRequest request) {
+    public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest authRequest) {
         try {
             daoAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(),
                     authRequest.getPassword()));
@@ -60,7 +59,7 @@ public class AuthService {
         return new ResponseEntity<>(new AppError("Wrong access!"), HttpStatusCode.valueOf(403));
     }
 
-    public ResponseEntity<?> createNewUser(@RequestBody RegistrationUserDto registrationUserDto, HttpServletRequest request) {
+    public ResponseEntity<?> createNewUser(@RequestBody RegistrationUserDto registrationUserDto) {
         if (!registrationUserDto.getPassword().equals(registrationUserDto.getConfirmPassword())) {
             return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(),
                     "Password mismatch"), HttpStatus.BAD_REQUEST);

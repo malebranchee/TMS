@@ -19,7 +19,7 @@ public class User {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "mail")
+    @Column(name = "login")
     private String login;
 
     @Column(name = "nickname")
@@ -28,9 +28,6 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @Transient
-    private String confirmPassword;
-
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
             name = "roles_x_users",
@@ -38,14 +35,57 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private List<Role> roles;
 
-    @ManyToMany(mappedBy = "executors")
+    @ManyToMany(mappedBy = "executors", fetch = FetchType.EAGER)
     private List<Task> tasksToExecute;
 
-    @OneToMany(mappedBy = "author")
+    @OneToMany(mappedBy = "authorOfTask", fetch = FetchType.EAGER)
     private List<Task> tasksToManage;
+
+    @OneToMany(mappedBy = "authorOfComment", fetch = FetchType.EAGER)
+    private List<Comment> comments;
 
     public User() {
     }
+
+    // Tasks to execute methods
+    // -----------------------------------
+    public void deleteAllTasksToExecute()
+    {
+        tasksToExecute.clear();
+    }
+
+    public void addTaskToExecute(Task taskToExecute)
+    {
+        if (isNull(taskToExecute))
+            tasksToExecute = new ArrayList<>();
+        tasksToExecute.add(taskToExecute);
+    }
+
+    public void deleteTaskToExecute(Task taskToExecute)
+    {
+        tasksToExecute.remove(taskToExecute);
+    }
+    // -----------------------------------
+    // Tasks to manage methods
+    // -----------------------------------
+
+    public void deleteAllTasksToManage()
+    {
+        tasksToManage.clear();
+    }
+
+    public void addTaskToManage(Task taskToManage)
+    {
+        if (isNull(taskToManage))
+            tasksToManage = new ArrayList<>();
+        tasksToManage.add(taskToManage);
+    }
+
+    public void deleteTaskToManage(Task taskToManage)
+    {
+        tasksToManage.remove(taskToManage);
+    }
+    // -----------------------------------
 
     public void addRole(Role role) {
         if (isNull(roles))
