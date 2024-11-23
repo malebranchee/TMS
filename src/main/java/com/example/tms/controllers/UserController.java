@@ -15,7 +15,6 @@ import java.security.Principal;
 public class UserController {
     private final TaskService taskService;
 
-
     @GetMapping("/get/tasks/my")
     public String showMyTasksToDo(Principal principal)
     {

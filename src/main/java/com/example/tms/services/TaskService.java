@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
+import static org.springframework.http.ResponseEntity.ok;
+
 @Service
 @AllArgsConstructor
 public class TaskService {
@@ -93,6 +96,7 @@ public class TaskService {
                         task.getExecutors().clear();
                         user.getTasksToManage().remove(task);
                         task.setAuthor(null);
+                        save(task);
                     } catch (IllegalArgumentException e) {
                         return new ResponseEntity<>(new AppError("No such status!\nAvailable: IN_PROGRESS, WAITING, CLOSED"), HttpStatus.BAD_REQUEST);
                     }
@@ -111,10 +115,12 @@ public class TaskService {
     public ResponseEntity<?> addComment(Principal principal, String taskHeader, String text) {
         try {
             User user = userService.findByLogin(principal.getName()).orElseThrow();
-            if ((user.getTasksToExecute().contains(findByHeader(taskHeader).get())
-                    | user.getTasksToManage().contains(findByHeader(taskHeader).get()))
+            if ((user.getTasksToExecute().contains(findByHeader(taskHeader).orElseThrow())
+                    | user.getTasksToManage().contains(findByHeader(taskHeader).orElseThrow()))
                 && !findByHeader(taskHeader).orElseThrow().getStatus().equals(Task.Status.CLOSED)) {
-                findByHeader(taskHeader).orElseThrow().getComments().add(new Comment(user, text));
+                Task task = findByHeader(taskHeader).orElseThrow();
+                task.getComments().add(new Comment(user, text));
+                save(task);
             }
             return new ResponseEntity<>(new AppError("You dont have permission to add comments to this task!"), HttpStatus.METHOD_NOT_ALLOWED);
         } catch (NoSuchElementException noSuchElementException) {
@@ -146,6 +152,8 @@ public class TaskService {
                 try {
                     Task task = new Task(taskDto.getHeader(), taskDto.getDescription(), Task.Status.CREATED, Task.Priority.valueOf(taskDto.getPriority()), executors, user);
                     save(task);
+                    return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus().toString(),
+                            task.getPriority().toString(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
                 } catch (IllegalArgumentException e) {
                     return new ResponseEntity<>(new AppError(String.format("Priority '%s' doesnt exist", taskDto.getPriority())), HttpStatus.BAD_REQUEST);
                 }
@@ -153,6 +161,33 @@ public class TaskService {
         } catch (NoSuchElementException noSuchElementException) {
             return new ResponseEntity<>(new AppError("No such user :("), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(new AppError("Unknown error!"), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<?> changePriority(String taskHeader, String priority)
+    {
+        Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
+        try {
+            task.setPriority(Task.Priority.valueOf(priority));
+            save(task);
+            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus().toString(),
+                    task.getPriority().toString(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
+        } catch (IllegalArgumentException illegalArgumentException)
+        {
+            return new ResponseEntity<>(new AppError(illegalArgumentException.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<?> changeDescription(String taskHeader, String description)
+    {
+        Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
+        try{
+            task.setDescription(description);
+            save(task);
+            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus().toString(),
+                    task.getPriority().toString(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
+        } catch (IllegalArgumentException illegalArgumentException)
+        {
+            return new ResponseEntity<>(new AppError(illegalArgumentException.getMessage()), HttpStatus.BAD_REQUEST);
+        }
     }
 }

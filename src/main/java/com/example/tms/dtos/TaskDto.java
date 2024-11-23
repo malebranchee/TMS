@@ -1,5 +1,6 @@
 package com.example.tms.dtos;
 
+import com.example.tms.repository.entities.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -13,4 +14,5 @@ public class TaskDto {
     private String status;
     private String priority;
     private List<String> executorNicknames;
+    private User author;
 }
