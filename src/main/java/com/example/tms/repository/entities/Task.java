@@ -79,8 +79,9 @@ public class Task {
     @Override
     public String toString()
     {
-        return String.format("ID: %d, Header: %s, Description: %s, Status: %s, Comments: %s," +
-                "Executors: %s, Author: %s", id, header, description, status, comments, executors.toString(), author.getNickname());
+        return String.format("ID: %d, Header: %s, Description: %s, Status: %s " +
+                "Executors: %s, Author: %s, Comments: %s\n", id, header, description, status, executors.toString(),
+                author.getNickname(), comments.toString()) ;
     }
 
 }

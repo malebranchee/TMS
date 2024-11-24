@@ -56,7 +56,6 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    // Просмотр своих задач
     public String showMyTasksToDo(Principal principal) {
         User user = userService.findByLogin(principal.getName()).get();
         if (user.getTasksToManage().isEmpty()) {
@@ -66,8 +65,6 @@ public class TaskService {
                 + "\n Tasks to manage: " + user.getTasksToManage().stream().map(Task::toString).toList();
     }
 
-    // Просмотр чужих задач
-    // по никнейму пользователя
     public String showAllTasksOfUser(String nickname) {
         try {
             User user = userService.findByNickname(nickname).orElseThrow(() -> new NoSuchElementException(
@@ -85,7 +82,8 @@ public class TaskService {
             User user = userService.findByLogin(principal.getName()).orElseThrow(() ->
                     new UsernameNotFoundException(String.format("No user with login '%s'", principal.getName())));
             if ((user.getTasksToExecute().contains(findByHeader(taskHeader).orElseThrow())
-                    | user.getTasksToManage().contains(findByHeader(taskHeader).orElseThrow()))
+                    | user.getTasksToManage().contains(findByHeader(taskHeader).orElseThrow())
+                    | user.getRoles().contains(roleService.findByName("ROLE_ADMIN").orElseThrow()))
                     &&
                     !findByHeader(taskHeader).orElseThrow().getStatus().equals(Task.Status.CLOSED)) {
                 try {
@@ -116,7 +114,8 @@ public class TaskService {
         try {
             User user = userService.findByLogin(principal.getName()).orElseThrow();
             if ((user.getTasksToExecute().contains(findByHeader(taskHeader).orElseThrow())
-                    | user.getTasksToManage().contains(findByHeader(taskHeader).orElseThrow()))
+                    | user.getTasksToManage().contains(findByHeader(taskHeader).orElseThrow())
+                    | user.getRoles().contains(roleService.findByName("ROLE_ADMIN").orElseThrow()))
                 && !findByHeader(taskHeader).orElseThrow().getStatus().equals(Task.Status.CLOSED)) {
                 Task task = findByHeader(taskHeader).orElseThrow();
                 task.getComments().add(new Comment(user, text));
@@ -147,7 +146,7 @@ public class TaskService {
                 executors.addAll(taskDto.getExecutorNicknames()
                         .stream()
                         .filter(nickname -> userService.findByNickname(nickname).isPresent())
-                        .map(nickname -> userService.findByNickname(nickname).get())
+                        .map(nickname -> userService.findByNickname(nickname).orElseThrow())
                         .toList());
                 try {
                     Task task = new Task(taskDto.getHeader(), taskDto.getDescription(), Task.Status.CREATED, Task.Priority.valueOf(taskDto.getPriority()), executors, user);
@@ -188,6 +187,47 @@ public class TaskService {
         } catch (IllegalArgumentException illegalArgumentException)
         {
             return new ResponseEntity<>(new AppError(illegalArgumentException.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<?> addExecutors(String taskHeader, List<String> executorNames)
+    {
+        try{
+            Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
+            List<User> executors = task.getExecutors();
+            executors.addAll(executorNames
+                    .stream()
+                    .filter(name -> userService.findByNickname(name).isPresent())
+                    .map(name -> userService.findByNickname(name).get())
+                    .toList());
+            task.setExecutors(executors);
+            save(task);
+            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus().toString(),
+                    task.getPriority().toString(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
+        } catch (NoSuchElementException noSuchElementException)
+        {
+            return new ResponseEntity<>(new AppError(noSuchElementException.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<?> deleteExecutors(String taskHeader, List<String> executorNames)
+    {
+        try{
+            Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
+            List<User> executors = task.getExecutors();
+            executorNames
+                    .stream()
+                    .filter(name -> userService.findByNickname(name).isPresent())
+                    .map(name -> userService.findByNickname(name).get())
+                    .toList()
+                    .forEach(executors::remove);
+            task.setExecutors(executors);
+            save(task);
+            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus().toString(),
+                    task.getPriority().toString(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
+        } catch (NoSuchElementException noSuchElementException)
+        {
+            return new ResponseEntity<>(new AppError(noSuchElementException.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 }

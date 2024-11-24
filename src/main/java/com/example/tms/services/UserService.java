@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleService roleService;
-    private final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     public Optional<User> findByLogin(String username)
     {
@@ -45,18 +44,10 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    @Transactional
-    public void addRole(String roleName, String login) {
-        Role role = roleService.findByName(roleName).orElseThrow();
-        User user = findByLogin(login).orElseThrow();
-        user.addRole(role);
-        save(user);
-    }
-
     public boolean ifUserNotExists(String login)
     {
         try{
-            User user = findByLogin(login).orElseThrow(() -> new UsernameNotFoundException("No such user!"));
+            findByLogin(login).orElseThrow(() -> new UsernameNotFoundException("No such user!"));
             return false;
         } catch (UsernameNotFoundException e)
         {

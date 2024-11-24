@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 public class RegistrationUserDto {
-    /*public interface registration{}
+    public interface registration{}
     public interface login{}
 
     @NotBlank(groups = {registration.class, login.class}, message = "Поле имени не может быть пустым")
@@ -23,9 +23,9 @@ public class RegistrationUserDto {
     private String password;
 
     @NotBlank(groups = {registration.class}, message = "")
-    private String confirmPassword;*/
-
-    private String login;
-    private String password;
     private String confirmPassword;
+
+    /*private String login;
+    private String password;
+    private String confirmPassword;*/
 }

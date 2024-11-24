@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -19,19 +20,19 @@ public class AuthenticationController {
     private final UserService userService;
 
     @PostMapping("/auth")
-    public ResponseEntity<?> authorizeUser(@RequestBody JwtRequest authRequest)
+    public ResponseEntity<?> authorizeUser(@RequestBody @Validated(JwtRequest.class) JwtRequest authRequest)
     {
         return authService.createAuthToken(authRequest);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest)
+    public ResponseEntity<?> refreshToken(@RequestBody @Validated(RefreshTokenRequest.class) RefreshTokenRequest refreshTokenRequest)
     {
         return authService.refreshToken(refreshTokenRequest);
     }
 
     @PostMapping("/registration")
-    public ResponseEntity<?> registration(@RequestBody  RegistrationUserDto registrationUserDto)
+    public ResponseEntity<?> registration(@RequestBody  @Validated(RegistrationUserDto.registration.class) RegistrationUserDto registrationUserDto)
     {
         return authService.createNewUser(registrationUserDto);
     }

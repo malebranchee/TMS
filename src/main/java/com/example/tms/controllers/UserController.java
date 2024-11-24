@@ -27,7 +27,7 @@ public class UserController {
         return taskService.showAllTasksOfUser(nickname);
     }
 
-    @PostMapping("/task/{taskHeader}/change/status")
+    @PutMapping("/task/{taskHeader}/change/status")
     public ResponseEntity<?> changeTaskStatus(Principal principal, @PathVariable @RequestParam String taskHeader, @RequestParam String status)
     {
 

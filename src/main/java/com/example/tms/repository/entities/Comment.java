@@ -52,6 +52,6 @@ public class Comment {
     @Override
     public String toString()
     {
-        return String.format("%s at %s : %s", authorOfComment.getNickname(), getDate().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)), getText());
+        return String.format("%s at %s : %s\n", authorOfComment.getNickname(), getDate().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)), getText());
     }
 }
