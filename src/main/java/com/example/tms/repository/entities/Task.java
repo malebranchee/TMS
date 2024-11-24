@@ -29,17 +29,17 @@ public class Task {
 
     @NotBlank
     @Column(name = "status")
-    private Status status;
+    private String status;
 
     @NotBlank
     @Column(name = "priority")
-    private Priority priority;
+    private String priority;
 
-    @OneToMany(mappedBy = "task")
+    @OneToMany
     @JoinTable(name = "tasks_x_users", inverseJoinColumns = @JoinColumn(name = "comment_id"))
     private List<Comment> comments;
 
-    @ManyToMany(mappedBy = "tasksToExecute", fetch = FetchType.EAGER)
+    @ManyToMany( fetch = FetchType.EAGER)
     @JoinTable(
             name = "tasks_x_users",
             joinColumns = @JoinColumn(name = "task_id"),
@@ -57,8 +57,8 @@ public class Task {
     {
         this.header = header;
         this.description = description;
-        this.status = status;
-        this.priority = priority;
+        this.status = status.toString();
+        this.priority = priority.toString();
         this.executors = executors;
         this.author = author;
     }

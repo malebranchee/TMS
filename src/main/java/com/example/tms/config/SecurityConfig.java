@@ -1,7 +1,6 @@
 package com.example.tms.config;
 
 import com.example.tms.services.UserService;
-import com.example.tms.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,7 +32,7 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers( "/api/v1/panel/**").authenticated()
-                        .requestMatchers("/api/v1/panel/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/panel/admin/**").hasRole("ADMIN")
                         .anyRequest().not().authenticated()
                 )
                 .sessionManagement(session -> session

@@ -4,28 +4,25 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
-import java.io.Serializable;
 
 @Data
 @AllArgsConstructor
 public class RegistrationUserDto {
-    public interface registration{}
-    public interface login{}
 
-    @NotBlank(groups = {registration.class, login.class}, message = "Поле имени не может быть пустым")
-    @Size(min = 4, groups = {registration.class}, message = "Логин должен содержать минимум 4 символа")
+    @NotBlank(message = "Login field could not be empty or blanked!")
+    @Size(min = 4,  message = "Minimal login length - 4 characters")
     private String login;
 
-    @NotBlank(groups = {registration.class, login.class}, message = "Поле пароля не может быть пустым")
-    @Size(min = 2, groups = {registration.class, login.class},  message = "Минимум 2 символа в пароле!")
+    @NotBlank(message = "Nickname field could not be empty or blanked!")
+    @Size(min = 4, message = "Minimal nickname length - 4 characters")
+    private String nickname;
+
+    @NotBlank(message = "Password field could not be empty or blanked!")
+    @Size(min = 3,  message = "Minimal password length - 3 characters")
     private String password;
 
-    @NotBlank(groups = {registration.class}, message = "")
+    @NotBlank(message = "Password confirm field could not be empty or blanked!")
     private String confirmPassword;
 
-    /*private String login;
-    private String password;
-    private String confirmPassword;*/
 }

@@ -31,18 +31,16 @@ public class AuthService {
 
     public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest authRequest) {
         try {
-            daoAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(),
+            daoAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getLogin(),
                     authRequest.getPassword()));
         } catch (BadCredentialsException e) {
-            logger.error("User {} with current data doesn't exists.", authRequest.getUsername());
             AppError unauthorized = new AppError(HttpStatus.UNAUTHORIZED.value(),
                     "Wrong login or password");
             return new ResponseEntity<>(unauthorized, HttpStatus.UNAUTHORIZED);
         }
-        UserDetails userDetails = userService.loadUserByUsername(authRequest.getUsername());
+        UserDetails userDetails = userService.loadUserByUsername(authRequest.getLogin());
         String token = jwtUtils.generateToken(userDetails);
         String refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), userDetails);
-        logger.info("User {} signed in.", userDetails.getUsername());
         return ResponseEntity.ok(new JwtResponse(token, refreshToken));
     }
 
@@ -64,13 +62,14 @@ public class AuthService {
             return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(),
                     "Password mismatch"), HttpStatus.BAD_REQUEST);
         }
+
         if (userService.ifUserNotExists(registrationUserDto.getLogin())) {
 
             registrationUserDto.setPassword(new BCryptPasswordEncoder()
                     .encode(registrationUserDto.getPassword()));
             User user = userService.save(registrationUserDto);
             logger.info("User {} signed up.", user.getLogin());
-            return new ResponseEntity<>(new UserDto(user.getId(), user.getLogin()), HttpStatus.CREATED);
+            return new ResponseEntity<>(new UserDto(user.getId(), user.getLogin(), user.getNickname()), HttpStatus.CREATED);
         } else {
             return new ResponseEntity<>(new AppError("Such user already exists!"), HttpStatus.BAD_REQUEST);
         }

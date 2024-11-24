@@ -12,19 +12,21 @@ import java.util.List;
 @AllArgsConstructor
 public class TaskDto {
 
-    @NotBlank
+
+    @NotBlank(message = "Header could not be blanked or empty value!")
     private String header;
 
-    @NotBlank
+    @NotBlank(message = "Description could not be blanked or empty value!")
     private String description;
 
-    @NotBlank
+
+    @NotBlank(message = "Status could not be blanked or empty value!")
     private String status;
 
-    @NotBlank
+    @NotBlank(message = "Priority could not be blanked or empty value!")
     private String priority;
 
-    @NotBlank
+    @NotBlank(message = "Executors name could not be blanked or empty value!")
     private List<String> executorNicknames;
 
     @Nullable

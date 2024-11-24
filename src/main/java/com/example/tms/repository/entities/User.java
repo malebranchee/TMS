@@ -38,7 +38,7 @@ public class User {
     @ManyToMany(mappedBy = "executors", fetch = FetchType.EAGER)
     private List<Task> tasksToExecute;
 
-    @OneToMany(mappedBy = "authorOfTask", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
     private List<Task> tasksToManage;
 
     @OneToMany(mappedBy = "authorOfComment", fetch = FetchType.EAGER)

@@ -26,7 +26,7 @@ class AuthorizationTests
     public void RegistrationTest_shouldReturn201onCreatingNotExistedUser()
     {
         String uri = "http://localhost:8080/api/v1/registration";
-        RegistrationUserDto registrationUserDto = new RegistrationUserDto("pablo", "123", "123");
+        RegistrationUserDto registrationUserDto = new RegistrationUserDto("pablo", "pavlik","123", "123");
         ResponseEntity<?> response = restClient.post()
                 .uri(uri)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -41,7 +41,7 @@ class AuthorizationTests
     public void RegistrationTest_shouldReturnBadRequestOnExistsUserAuthorization()
     {
         String uri = "http://localhost:8080/api/v1/registration";
-        RegistrationUserDto registrationUserDto = new RegistrationUserDto("pablo", "123", "123");
+        RegistrationUserDto registrationUserDto = new RegistrationUserDto("pablo", "pavlik","123", "123");
         try {
             ResponseEntity<?> response = restClient.post()
                     .uri(uri)

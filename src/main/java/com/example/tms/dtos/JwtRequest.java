@@ -11,11 +11,11 @@ public class JwtRequest {
 
     interface login{}
 
-    @NotBlank
-    @Size(min = 4, groups = login.class, message = "Min length = 4")
-    private String username;
+    @NotBlank(message = "Field login can't be empty or blanked!")
+    @Size(min = 4, groups = login.class)
+    private String login;
 
-    @Size(min = 2, groups = login.class)
-    @NotBlank
+
+    @NotBlank(message = "Field password can't be empty or blanked!")
     private String password;
 }
