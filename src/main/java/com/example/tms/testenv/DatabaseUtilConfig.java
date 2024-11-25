@@ -1,4 +1,4 @@
-package com.example.tms.utils;
+package com.example.tms.testenv;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

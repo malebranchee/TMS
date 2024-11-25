@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 
+import java.net.HttpRetryException;
 import java.util.NoSuchElementException;
 
 
@@ -41,5 +43,11 @@ public class ErrorController {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(HttpRetryException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<?> resourceAccessDeniedException(HttpRetryException ex)
+    {
+        return new ResponseEntity<>("Wrong attempt to log in!", HttpStatus.UNAUTHORIZED);
+    }
 
 }
