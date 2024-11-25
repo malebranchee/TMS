@@ -19,12 +19,21 @@ public class ErrorController {
     public ResponseEntity<?> validationException(MethodArgumentNotValidException ex) {
         return new ResponseEntity<>(ex.getAllErrors().stream().map(ObjectError::getDefaultMessage), HttpStatus.BAD_REQUEST);
     }
+
     @ExceptionHandler(HttpClientErrorException.NotFound.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<?> notFoundException(HttpClientErrorException.NotFound ex)
     {
         return new ResponseEntity<>("This is not lama you looking for :(", HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(HttpClientErrorException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<?> clientErrorException(HttpClientErrorException ex)
+    {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<?> noSuchElementException(NoSuchElementException ex)

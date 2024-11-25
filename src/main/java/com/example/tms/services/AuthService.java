@@ -24,7 +24,6 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final Logger logger = LoggerFactory.getLogger(AuthService.class);
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final DaoAuthenticationProvider daoAuthenticationProvider;
@@ -68,7 +67,6 @@ public class AuthService {
             registrationUserDto.setPassword(new BCryptPasswordEncoder()
                     .encode(registrationUserDto.getPassword()));
             User user = userService.save(registrationUserDto);
-            logger.info("User {} signed up.", user.getLogin());
             return new ResponseEntity<>(new UserDto(user.getId(), user.getLogin(), user.getNickname()), HttpStatus.CREATED);
         } else {
             return new ResponseEntity<>(new AppError("Such user already exists!"), HttpStatus.BAD_REQUEST);

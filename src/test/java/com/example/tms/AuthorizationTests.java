@@ -1,70 +1,111 @@
 package com.example.tms;
 
 import com.example.tms.controllers.AuthenticationController;
+import com.example.tms.controllers.ErrorController;
 import com.example.tms.dtos.*;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.example.tms.exceptions.AppError;
+import com.example.tms.exceptions.EmailValidator;
+import com.example.tms.repository.UserRepository;
+import com.example.tms.services.AuthService;
+import com.example.tms.services.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.json.JacksonTester;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClient;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.Optional;
+
+import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 
-@ContextConfiguration(classes = AuthorizationTests.class)
-@RestClientTest(AuthenticationController.class)
-class AuthorizationTests
-{
-    private static final Logger log = LoggerFactory.getLogger(AuthorizationTests.class);
-    private final RestClient restClient = RestClient.create();
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class AuthorizationTests {
 
+    @Autowired
+    TestRestTemplate restTemplate;
+
+
+    @Order(1)
     @Test
-    public void RegistrationTest_shouldReturn201onCreatingNotExistedUser()
-    {
-        String uri = "http://localhost:8080/api/v1/registration";
-        RegistrationUserDto registrationUserDto = new RegistrationUserDto("pablo", "pavlik","123", "123");
-        ResponseEntity<?> response = restClient.post()
-                .uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(registrationUserDto).retrieve().toEntity(UserDto.class);
-        HttpEntity<UserDto> user = new HttpEntity(response.getBody(), response.getHeaders());
-        Assertions.assertEquals(user.getBody().getLogin(), registrationUserDto.getLogin());
+    public void RegistrationTest_shouldReturnCREATEDonCreatingNotExistedUser(){
+        ResponseEntity<UserDto> response = restTemplate.postForEntity(
+                "/api/v1/registration",
+                new RegistrationUserDto(
+                        "paho@mail.ru",
+                        "pablo",
+                        "123",
+                        "123"),
+                UserDto.class);
         Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
-
+        Assertions.assertEquals("pablo", response.getBody().getNickname());
     }
 
+    @Order(2)
     @Test
-    public void RegistrationTest_shouldReturnBadRequestOnExistsUserAuthorization()
-    {
-        String uri = "http://localhost:8080/api/v1/registration";
-        RegistrationUserDto registrationUserDto = new RegistrationUserDto("pablo", "pavlik","123", "123");
-        try {
-            ResponseEntity<?> response = restClient.post()
-                    .uri(uri)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(registrationUserDto).retrieve().toEntity(UserDto.class);
-        } catch (HttpClientErrorException e)
-        {
-            log.info(e.getMessage());
-        }
+    public void RegistrationTest_shouldReturnBADREQUESTOnExistsUserAuthorization() {
+        ResponseEntity<AppError> response = restTemplate.postForEntity(
+                "/api/v1/registration",
+                new RegistrationUserDto(
+                        "paho@mail.ru",
+                        "pablo",
+                        "123",
+                        "123"),
+                AppError.class);
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
+    @Order(3)
     @Test
-    public void AuthenticationTest_shouldReturnOkAndJWT()
+    public void AuthenticationTest_shouldReturnOkAndJwtTokensResponse()
     {
-        String uri = "http://localhost:8080/api/v1/auth";
-        JwtRequest jwtRequest = new JwtRequest("pablo", "123");
-        ResponseEntity<?> response = restClient.post()
-                .uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(jwtRequest).retrieve().toEntity(JwtResponse.class);
-        HttpEntity<JwtResponse> jwtResponseHttpEntity = new HttpEntity(response.getBody(), response.getHeaders());
-        Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertTrue(jwtResponseHttpEntity.hasBody());
+        ResponseEntity<JwtResponse> response = restTemplate.postForEntity(
+                "/api/v1/auth",
+                new JwtRequest(
+                        "paho@mail.ru",
+                        "123"
+                ), JwtResponse.class);
 
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
+
+    @Order(4)
+    @Test
+    public void AuthenticationTest_shouldReturn401OnBadCredentials() throws NullPointerException
+    {
+        ResponseEntity<AppError> response = restTemplate.postForEntity(
+                "/api/v1/auth",
+                new JwtRequest(
+                        "paho@mail.ru",
+                        "12"
+                ), AppError.class);
+
+        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        Assertions.assertEquals("Wrong login or password", response.getBody().getMessage());
+    }
+
+
+
 }

@@ -4,11 +4,9 @@ import com.example.tms.dtos.JwtRequest;
 import com.example.tms.dtos.RefreshTokenRequest;
 import com.example.tms.dtos.RegistrationUserDto;
 import com.example.tms.services.AuthService;
-import com.example.tms.services.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,10 +15,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1")
 public class AuthenticationController {
     private final AuthService authService;
+    private final EmailValidator emailValidator;
 
     @PostMapping("/auth")
     public ResponseEntity<?> authorizeUser(@RequestBody @Validated JwtRequest authRequest)
     {
+
         return authService.createAuthToken(authRequest);
     }
 

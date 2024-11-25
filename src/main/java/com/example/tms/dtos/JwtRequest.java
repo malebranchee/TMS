@@ -12,7 +12,6 @@ public class JwtRequest {
     interface login{}
 
     @NotBlank(message = "Field login can't be empty or blanked!")
-    @Size(min = 4, groups = login.class)
     private String login;
 
 
