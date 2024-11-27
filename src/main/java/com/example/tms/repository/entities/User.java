@@ -1,8 +1,11 @@
 package com.example.tms.repository.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +13,8 @@ import static java.util.Objects.isNull;
 
 @Entity
 @Table(name = "users")
-@Data
+@Setter
+@Getter
 @AllArgsConstructor
 @SequenceGenerator(name = "user_seq", sequenceName = "user_id_seq", allocationSize = 1)
 public class User {
@@ -28,7 +32,7 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "roles_x_users",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -96,7 +100,7 @@ public class User {
     @Override
     public String toString()
     {
-        return String.format("ID: %d, Login: %s, Roles : %s", id, login,roles.toString());
+        return String.format("ID: %d, Login: %s, Roles : %s", id, login, roles.stream().map(Role::toString).toList());
     }
 
 }

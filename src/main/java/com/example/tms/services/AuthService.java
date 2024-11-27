@@ -5,11 +5,10 @@ import com.example.tms.exceptions.AppError;
 import com.example.tms.repository.entities.User;
 import com.example.tms.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -28,10 +27,12 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final DaoAuthenticationProvider daoAuthenticationProvider;
 
+
     public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest authRequest) {
         try {
-            daoAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getLogin(),
-                    authRequest.getPassword()));
+            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(authRequest.getLogin(),
+                    authRequest.getPassword());
+            daoAuthenticationProvider.authenticate(token);
         } catch (BadCredentialsException e) {
             AppError unauthorized = new AppError(HttpStatus.UNAUTHORIZED.value(),
                     "Wrong login or password");
@@ -43,7 +44,7 @@ public class AuthService {
         return ResponseEntity.ok(new JwtResponse(token, refreshToken));
     }
 
-    public ResponseEntity<?> refreshToken(RefreshTokenRequest refreshTokenRequest) {
+    public ResponseEntity<?> refreshToken(RefreshTokenDto refreshTokenRequest) {
         UserDetails userDetails = userService.loadUserByUsername(jwtUtils.getUsername(
                 refreshTokenRequest.getToken()
         ));
@@ -72,4 +73,5 @@ public class AuthService {
             return new ResponseEntity<>(new AppError("Such user already exists!"), HttpStatus.BAD_REQUEST);
         }
     }
+
 }

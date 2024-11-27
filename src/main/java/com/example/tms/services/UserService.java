@@ -5,6 +5,7 @@ import com.example.tms.repository.UserRepository;
 import com.example.tms.repository.entities.User;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -53,6 +54,7 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = findByLogin(username).orElseThrow(() ->
@@ -67,4 +69,5 @@ public class UserService implements UserDetailsService {
                         .collect(Collectors.toList())
         );
     }
+
 }

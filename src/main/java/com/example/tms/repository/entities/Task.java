@@ -1,11 +1,13 @@
 package com.example.tms.repository.entities;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.hibernate.validator.constraints.UniqueElements;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -19,7 +21,6 @@ public class Task {
     private Long id;
 
     @NotBlank
-    @UniqueElements(message = "")
     @Column(name = "header")
     private String header;
 
@@ -35,11 +36,10 @@ public class Task {
     @Column(name = "priority")
     private String priority;
 
-    @OneToMany
-    @JoinTable(name = "tasks_x_users", inverseJoinColumns = @JoinColumn(name = "comment_id"))
+    @ManyToMany(mappedBy = "tasks")
     private List<Comment> comments;
 
-    @ManyToMany( fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(
             name = "tasks_x_users",
             joinColumns = @JoinColumn(name = "task_id"),
@@ -47,8 +47,8 @@ public class Task {
     )
     private List<User> executors;
 
-    @ManyToOne
-    @JoinTable(name = "tasks_x_users", inverseJoinColumns = @JoinColumn(name = "author_id"))
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "author_id")
     private User author;
 
     protected Task(){}
@@ -59,6 +59,7 @@ public class Task {
         this.description = description;
         this.status = status.toString();
         this.priority = priority.toString();
+        this.comments = new ArrayList<>();
         this.executors = executors;
         this.author = author;
     }
@@ -79,8 +80,8 @@ public class Task {
     @Override
     public String toString()
     {
-        return String.format("ID: %d, Header: %s, Description: %s, Status: %s " +
-                "Executors: %s, Author: %s, Comments: %s\n", id, header, description, status, executors.toString(),
+        return String.format("ID: %d, Header: %s, Description: %s, Status: %s, " +
+                "Executors: %s, Author: %s, Comments: %s\n", id, header, description, status, executors.stream().map(User::toString).toList(),
                 author.getNickname(), comments.toString()) ;
     }
 

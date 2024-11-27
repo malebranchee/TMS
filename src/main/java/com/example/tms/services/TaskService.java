@@ -2,14 +2,21 @@ package com.example.tms.services;
 
 import com.example.tms.dtos.TaskDto;
 import com.example.tms.exceptions.AppError;
+import com.example.tms.exceptions.OkResponse;
 import com.example.tms.repository.TaskRepository;
 import com.example.tms.repository.entities.Comment;
 import com.example.tms.repository.entities.Task;
 import com.example.tms.repository.entities.User;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.security.Principal;
@@ -22,10 +29,13 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class TaskService {
+    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
+    @Autowired
     private final TaskRepository taskRepository;
+    @Autowired
     private final UserService userService;
+    @Autowired
     private final RoleService roleService;
-    private final DaoAuthenticationProvider daoAuthenticationProvider;
 
     Optional<Task> findByHeader(String header) {
         return taskRepository.findByHeader(header);
@@ -56,24 +66,23 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    public String showMyTasksToDo(Principal principal) {
-
+    public ResponseEntity<?> showMyTasksToDo(Principal principal) {
         User user = userService.findByLogin(principal.getName()).orElseThrow(
                 () -> new UsernameNotFoundException("No such user!"));
-        if (user.getTasksToManage().isEmpty()) {
-            return "No tasks to do, chill :)";
+        if (user.getTasksToExecute().isEmpty()) {
+            return new ResponseEntity<>(new OkResponse("No tasks to do, chill :)", HttpStatus.OK), HttpStatus.OK);
         }
-        return "Tasks to do: " + user.getTasksToExecute().stream().map(Task::toString).toList()
-                + "\n Tasks to manage: " + user.getTasksToManage().stream().map(Task::toString).toList();
+        return new ResponseEntity<>(new OkResponse("Tasks to do: " + user.getTasksToExecute().stream().map(Task::toString).toList()
+                + "\n Tasks to manage: " + user.getTasksToManage().stream().map(Task::toString).toList(), HttpStatus.OK), HttpStatus.OK);
     }
 
-    public String showAllTasksOfUser(String nickname) {
+    public ResponseEntity<?> showAllTasksOfUser(String nickname) {
 
             User user = userService.findByNickname(nickname).orElseThrow(() -> new NoSuchElementException(
                     String.format("User with nickname '%s' doesnt exist", nickname)
             ));
-            return "Tasks to do: " + user.getTasksToExecute().stream().map(Task::toString).toList()
-                    + "\n Tasks to manage: " + user.getTasksToManage().stream().map(Task::toString).toList();
+            return new ResponseEntity<>(new OkResponse("Tasks to do: " + user.getTasksToExecute().stream().map(Task::toString).toList()
+                    + "\n Tasks to manage: " + user.getTasksToManage().stream().map(Task::toString).toList(), HttpStatus.OK), HttpStatus.OK);
 
     }
 
@@ -81,13 +90,14 @@ public class TaskService {
         try {
             User user = userService.findByLogin(principal.getName()).orElseThrow(() ->
                     new UsernameNotFoundException(String.format("No user with login '%s'", principal.getName())));
-            if ((user.getTasksToExecute().contains(findByHeader(taskHeader).orElseThrow())
-                    | user.getTasksToManage().contains(findByHeader(taskHeader).orElseThrow())
+            Task task = findByHeader(taskHeader).orElseThrow();
+            if ((user.getTasksToExecute().contains(task)
+                    | user.getTasksToManage().contains(task)
                     | user.getRoles().contains(roleService.findByName("ROLE_ADMIN").orElseThrow()))
                     &&
-                    !findByHeader(taskHeader).orElseThrow().getStatus().equals(Task.Status.CLOSED.toString())) {
+                    !task.getStatus().equals(Task.Status.CLOSED.toString())){
                 try {
-                    Task task = findByHeader(taskHeader).orElseThrow(() ->
+                    task = findByHeader(taskHeader).orElseThrow(() ->
                             new NoSuchElementException("No such task!"));
                     try {
                         task.setStatus(status);
@@ -95,6 +105,7 @@ public class TaskService {
                         user.getTasksToManage().remove(task);
                         task.setAuthor(null);
                         save(task);
+                        new ResponseEntity<>(new OkResponse("Status changed to " + status, HttpStatus.OK), HttpStatus.OK);
                     } catch (IllegalArgumentException e) {
                         return new ResponseEntity<>(new AppError(400, "No such status!\nAvailable: IN_PROGRESS, WAITING, CLOSED"), HttpStatus.BAD_REQUEST);
                     }
@@ -120,6 +131,7 @@ public class TaskService {
                 Task task = findByHeader(taskHeader).orElseThrow();
                 task.getComments().add(new Comment(user, text));
                 save(task);
+                return new ResponseEntity<>(new OkResponse("Created new comment: " + text, HttpStatus.CREATED), HttpStatus.CREATED);
             }
             return new ResponseEntity<>(new AppError(405, "You dont have permission to add comments to this task!"), HttpStatus.METHOD_NOT_ALLOWED);
         } catch (NoSuchElementException noSuchElementException) {
@@ -130,7 +142,7 @@ public class TaskService {
     public ResponseEntity<?> createTask(Principal principal, TaskDto taskDto) {
         try {
             User user = userService.findByLogin(principal.getName()).orElseThrow();
-            List<Task> tasks = new ArrayList();
+            List<Task> tasks = new ArrayList<>();
             getAllTasks().forEach(tasks::add);
             boolean ifTaskExists = tasks.stream().anyMatch(task -> task.getHeader().equals(taskDto.getHeader()));
             if (ifTaskExists) {
@@ -148,11 +160,11 @@ public class TaskService {
                         .filter(nickname -> userService.findByNickname(nickname).isPresent())
                         .map(nickname -> userService.findByNickname(nickname).orElseThrow())
                         .toList());
+
                 try {
                     Task task = new Task(taskDto.getHeader(), taskDto.getDescription(), Task.Status.CREATED, Task.Priority.valueOf(taskDto.getPriority()), executors, user);
                     save(task);
-                    return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus(),
-                            task.getPriority(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
+                    return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.CREATED);
                 } catch (IllegalArgumentException e) {
                     return new ResponseEntity<>(new AppError(400, String.format("Priority '%s' doesnt exist", taskDto.getPriority())), HttpStatus.BAD_REQUEST);
                 }
@@ -168,8 +180,7 @@ public class TaskService {
         try {
             task.setPriority(priority);
             save(task);
-            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus(),
-                    task.getPriority(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
+            return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.CREATED);
         } catch (IllegalArgumentException illegalArgumentException)
         {
             return new ResponseEntity<>(new AppError(400, "No such priority. Available: HIGH, MEDIUM, LOW.\n"), HttpStatus.BAD_REQUEST);
@@ -182,8 +193,7 @@ public class TaskService {
         try{
             task.setDescription(description);
             save(task);
-            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus(),
-                    task.getPriority(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
+            return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.CREATED);
         } catch (IllegalArgumentException illegalArgumentException)
         {
             return new ResponseEntity<>(new AppError(illegalArgumentException.getMessage()), HttpStatus.BAD_REQUEST);
@@ -202,8 +212,7 @@ public class TaskService {
                     .toList());
             task.setExecutors(executors);
             save(task);
-            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus(),
-                    task.getPriority(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
+            return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.CREATED);
         } catch (NoSuchElementException noSuchElementException)
         {
             return new ResponseEntity<>(new AppError(noSuchElementException.getMessage()), HttpStatus.BAD_REQUEST);
@@ -223,8 +232,7 @@ public class TaskService {
                     .forEach(executors::remove);
             task.setExecutors(executors);
             save(task);
-            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getStatus(),
-                    task.getPriority(), task.getExecutors().stream().map(User::toString).toList(), task.getAuthor()));
+            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()));
         } catch (NoSuchElementException noSuchElementException)
         {
             return new ResponseEntity<>(new AppError(noSuchElementException.getMessage()), HttpStatus.BAD_REQUEST);

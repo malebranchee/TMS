@@ -1,5 +1,6 @@
 package com.example.tms.controllers;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
@@ -14,6 +15,7 @@ import java.net.HttpRetryException;
 import java.util.NoSuchElementException;
 
 
+@Tag(name = "Exceptions controller", description = "Provides handlers for many available cases.")
 @ControllerAdvice
 public class ErrorController {
     @ExceptionHandler(MethodArgumentNotValidException.class)

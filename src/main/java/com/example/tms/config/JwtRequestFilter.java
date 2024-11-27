@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -54,8 +55,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                             .collect(Collectors.toList())
             );
             SecurityContextHolder.getContext().setAuthentication(token);
-
         }
         filterChain.doFilter(request, response);
     }
+
+
 }

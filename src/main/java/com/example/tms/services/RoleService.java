@@ -11,7 +11,7 @@ import java.util.Optional;
 public class RoleService {
     private final RoleRepository roleRepository;
 
-    Optional<Role> findByName(String role)
+    public Optional<Role> findByName(String role)
     {
         return roleRepository.findByName(role);
     }

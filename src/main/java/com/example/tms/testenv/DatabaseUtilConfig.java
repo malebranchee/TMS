@@ -1,6 +1,7 @@
 package com.example.tms.testenv;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
@@ -11,7 +12,6 @@ import java.sql.Statement;
 public class DatabaseUtilConfig implements CommandLineRunner {
 
     private final DataSource dataSource;
-
     public DatabaseUtilConfig(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -42,15 +42,18 @@ public class DatabaseUtilConfig implements CommandLineRunner {
                     "    description varchar(100),\n" +
                     "    status varchar(30),\n" +
                     "    priority varchar(30),\n" +
-                    "    comments varchar(100)\n" +
+                    "    author_id bigint not null,\n"+
+                    "    comment_id bigint not null,"+
+                    "    FOREIGN KEY (author_id) references users(id)\n" +
                     ");\n" +
                     "\n" +
                     "CREATE TABLE IF NOT EXISTS comments\n" +
                     "(\n" +
                     "    id SERIAL PRIMARY KEY,\n" +
-                    "    author varchar(30),\n" +
                     "    text varchar(100),\n" +
-                    "    date date\n" +
+                    "    date date,\n" +
+                    "    author_id bigint not null,\n" +
+                    "    FOREIGN KEY(author_id) references users(id)"+
                     ");\n" +
                     "\n" +
                     "CREATE TABLE IF NOT EXISTS roles_x_users\n" +
@@ -66,24 +69,32 @@ public class DatabaseUtilConfig implements CommandLineRunner {
                     "(\n" +
                     "    task_id bigint not null,\n" +
                     "    executor_id bigint not null,\n" +
-                    "    author_id bigint not null,\n" +
-                    "    comment_id bigint not null,\n" +
-                    "    PRIMARY KEY(task_id),\n" +
-                    "    FOREIGN KEY(executor_id) references users(id),\n" +
-                    "    FOREIGN KEY(author_id) references users(id),\n" +
-                    "    FOREIGN KEY(comment_id) references comments(id)\n" +
+                    "    PRIMARY KEY(task_id, executor_id)," +
+                    "    FOREIGN KEY(task_id) references tasks(id),"+
+                    "    FOREIGN KEY(executor_id) references users(id)\n" +
+                    ");\n" +
+                    "\n" +
+                    "CREATE TABLE IF NOT EXISTS tasks_comments"+
+                    "(\n"+
+                    "task_id bigint not null,\n"+
+                    "comment_id bigint not null,\n"+
+                    "PRIMARY KEY(task_id, comment_id),\n"+
+                    "FOREIGN KEY(task_id) references tasks(id),\n"+
+                    "FOREIGN KEY(comment_id) references comments(id)\n"+
                     ");\n" +
                     "\n" +
                     "CREATE TABLE IF NOT EXISTS comments_x_authors\n" +
                     "(\n" +
                     "    comment_id bigint not null,\n" +
                     "    author_id bigint not null,\n" +
-                    "    PRIMARY KEY(comment_id),\n" +
+                    "    PRIMARY KEY(author_id),\n" +
                     "    FOREIGN KEY(author_id) references users(id)\n" +
                     ");");
             statement.execute("INSERT INTO roles VALUES ('1', 'ROLE_ADMIN'),\n" +
                     "                         ('2', 'ROLE_USER');");
 
+
         }
     }
+
 }

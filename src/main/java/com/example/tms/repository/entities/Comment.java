@@ -6,6 +6,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
+import java.util.List;
 
 
 @Entity
@@ -20,15 +21,16 @@ public class Comment {
 
     @Getter
     @ManyToOne
-    @JoinTable(
-            name = "comments_x_authors",
-            joinColumns = @JoinColumn(name = "comment_id"),
-            inverseJoinColumns = @JoinColumn(name = "author_id")
-    )
+    @JoinColumn(name = "author_id", nullable = false)
     private User authorOfComment;
 
-    @ManyToOne
-    private Task task;
+    @ManyToMany
+    @JoinTable(
+            name = "tasks_comments",
+            joinColumns = @JoinColumn(name = "comment_id"),
+            inverseJoinColumns = @JoinColumn(name = "task_id")
+    )
+    private List<Task> tasks;
 
     @NotBlank
     @Getter
