@@ -1,5 +1,7 @@
 package com.example.tms.controllers;
 
+import com.example.tms.dtos.ChangeTaskStatusDTO;
+import com.example.tms.dtos.CommentDto;
 import com.example.tms.services.TaskService;
 import com.example.tms.services.UserService;
 import com.example.tms.utils.JwtUtils;
@@ -15,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,6 +40,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/panel")
 @AllArgsConstructor
 public class UserController {
+    @Autowired
     private final TaskService taskService;
 
     @Operation(summary = "Getting all tasks of current user", description = "Return all tasks of current user.")
@@ -61,10 +65,10 @@ public class UserController {
                                               @Parameter(description = "Task header parameter that is @PathVariable value.", example = "Deploy")
                                               @PathVariable String taskHeader,
                                               @Parameter(description = "New task status value. Available: HIGH, MEDIUM, LOW.", example = "HIGH")
-                                              @RequestParam @NotBlank String status)
+                                              @RequestBody ChangeTaskStatusDTO dto)
     {
 
-        return taskService.changeTaskStatus(principal, taskHeader, status);
+        return taskService.changeTaskStatus(principal, taskHeader, dto);
     }
 
     @Operation(summary = "Adding comment to task", description = "Post request to @PathVariable task header for adding new comment.")
@@ -73,9 +77,9 @@ public class UserController {
                                         @Parameter(description = "Task header parameter that is @PathVariable value.", example = "Deploy")
                                         @PathVariable String taskHeader,
                                         @Parameter(description = "New comment which will be added to task comments.", example = "Too hard for me!")
-                                        @RequestParam @NotBlank String comment)
+                                        @RequestBody CommentDto dto)
     {
-        return taskService.addComment(principal, taskHeader, comment);
+        return taskService.addComment(principal, taskHeader, dto);
     }
 
 }

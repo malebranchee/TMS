@@ -1,5 +1,8 @@
 package com.example.tms.services;
 
+import com.example.tms.dtos.ChangeTaskPriorityDTO;
+import com.example.tms.dtos.ChangeTaskStatusDTO;
+import com.example.tms.dtos.CommentDto;
 import com.example.tms.dtos.TaskDto;
 import com.example.tms.exceptions.AppError;
 import com.example.tms.exceptions.OkResponse;
@@ -20,10 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -86,42 +86,38 @@ public class TaskService {
 
     }
 
-    public ResponseEntity<?> changeTaskStatus(Principal principal, String taskHeader, String status) {
+    public ResponseEntity<?> changeTaskStatus(Principal principal, String taskHeader, ChangeTaskStatusDTO dto) {
         try {
             User user = userService.findByLogin(principal.getName()).orElseThrow(() ->
                     new UsernameNotFoundException(String.format("No user with login '%s'", principal.getName())));
             Task task = findByHeader(taskHeader).orElseThrow();
+
             if ((user.getTasksToExecute().contains(task)
-                    | user.getTasksToManage().contains(task)
-                    | user.getRoles().contains(roleService.findByName("ROLE_ADMIN").orElseThrow()))
-                    &&
-                    !task.getStatus().equals(Task.Status.CLOSED.toString())){
-                try {
-                    task = findByHeader(taskHeader).orElseThrow(() ->
-                            new NoSuchElementException("No such task!"));
-                    try {
-                        task.setStatus(status);
-                        task.getExecutors().clear();
-                        user.getTasksToManage().remove(task);
-                        task.setAuthor(null);
+                    || user.getTasksToManage().contains(task)
+                    || user.getRoles().contains(roleService.findByName("ROLE_ADMIN").orElseThrow()))
+                    && Arrays.stream(Task.Status.values())
+                    .anyMatch(t -> t.equals(Task.Status.valueOf(dto.getStatus()))))
+            {
+                        if (dto.getStatus().equals("CLOSED"))
+                        {
+                            task.setStatus(Task.Status.CLOSED.name());
+                            user.getTasksToExecute().remove(task);
+                            user.getTasksToManage().remove(task);
+                        }
+                        else {
+                            task.setStatus(dto.getStatus());
+                        }
                         save(task);
-                        new ResponseEntity<>(new OkResponse("Status changed to " + status, HttpStatus.OK), HttpStatus.OK);
-                    } catch (IllegalArgumentException e) {
-                        return new ResponseEntity<>(new AppError(400, "No such status!\nAvailable: IN_PROGRESS, WAITING, CLOSED"), HttpStatus.BAD_REQUEST);
-                    }
-                } catch (NoSuchElementException noSuchElementException) {
-                    return new ResponseEntity<>(new AppError(400, noSuchElementException.getMessage()), HttpStatus.BAD_REQUEST);
-                }
-            } else
+                        return new ResponseEntity<>(new OkResponse("Status changed to " + dto.getStatus(), HttpStatus.OK), HttpStatus.OK);
+            } else {
                 return new ResponseEntity<>(new AppError(405, "You dont have permission to edit status!"), HttpStatus.METHOD_NOT_ALLOWED);
+            }
         } catch (UsernameNotFoundException notFoundException) {
             return new ResponseEntity<>(new AppError(400, notFoundException.getMessage()), HttpStatus.BAD_REQUEST);
         }
-
-        return new ResponseEntity<>(new AppError("Unknown response error!"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public ResponseEntity<?> addComment(Principal principal, String taskHeader, String text) {
+    public ResponseEntity<?> addComment(Principal principal, String taskHeader, CommentDto dto) {
         try {
             User user = userService.findByLogin(principal.getName()).orElseThrow();
             if ((user.getTasksToExecute().contains(findByHeader(taskHeader).orElseThrow())
@@ -129,9 +125,9 @@ public class TaskService {
                     | user.getRoles().contains(roleService.findByName("ROLE_ADMIN").orElseThrow()))
                 && !findByHeader(taskHeader).orElseThrow().getStatus().equals(Task.Status.CLOSED.toString())) {
                 Task task = findByHeader(taskHeader).orElseThrow();
-                task.getComments().add(new Comment(user, text));
+                task.getComments().add(new Comment(user, dto.getComment()));
                 save(task);
-                return new ResponseEntity<>(new OkResponse("Created new comment: " + text, HttpStatus.CREATED), HttpStatus.CREATED);
+                return new ResponseEntity<>(new OkResponse("Created new comment: " + dto.getComment(), HttpStatus.CREATED), HttpStatus.CREATED);
             }
             return new ResponseEntity<>(new AppError(405, "You dont have permission to add comments to this task!"), HttpStatus.METHOD_NOT_ALLOWED);
         } catch (NoSuchElementException noSuchElementException) {
@@ -174,16 +170,24 @@ public class TaskService {
         }
     }
 
-    public ResponseEntity<?> changePriority(String taskHeader, String priority)
+    public ResponseEntity<?> changePriority(String taskHeader, ChangeTaskPriorityDTO dto)
     {
-        Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
         try {
-            task.setPriority(priority);
-            save(task);
-            return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.CREATED);
-        } catch (IllegalArgumentException illegalArgumentException)
+            Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
+            try {
+                if (Arrays.stream(Task.Priority.values()).map(Enum::toString).toList().contains(dto.getPriority())) {
+                    task.setPriority(dto.getPriority());
+                    save(task);
+                    return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.OK);
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            } catch (IllegalArgumentException illegalArgumentException) {
+                return new ResponseEntity<>(new AppError(400, "No such priority. Available: HIGH, MEDIUM, LOW.\n"), HttpStatus.BAD_REQUEST);
+            }
+        } catch (NoSuchElementException e)
         {
-            return new ResponseEntity<>(new AppError(400, "No such priority. Available: HIGH, MEDIUM, LOW.\n"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new AppError(400, e.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 

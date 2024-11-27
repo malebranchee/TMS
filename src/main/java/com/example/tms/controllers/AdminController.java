@@ -1,5 +1,6 @@
 package com.example.tms.controllers;
 
+import com.example.tms.dtos.ChangeTaskPriorityDTO;
 import com.example.tms.dtos.TaskDto;
 import com.example.tms.services.TaskService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -40,10 +41,10 @@ public class AdminController {
     @PutMapping("/task/{taskHeader}/change/priority")
     public ResponseEntity<?> changePriority(
             @Parameter(name = "Task name that is @PathVariable value", example = "Deploy") @PathVariable String taskHeader,
-                                            @Parameter(name = "New priority", description = "Available: IN_PROGRESS, WAITING, CLOSED.")
-                                            @RequestParam @NotBlank String priority)
+            @Parameter(name = "New priority", description = "Available: HIGH, MEDIUM, LOW.")
+            ChangeTaskPriorityDTO dto)
     {
-        return taskService.changePriority(taskHeader, priority);
+        return taskService.changePriority(taskHeader, dto);
     }
 
     @Operation(summary = "Changes task description")

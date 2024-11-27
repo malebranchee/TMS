@@ -56,15 +56,9 @@ class AuthorizationTests {
     @InjectMocks
     RoleService roleService;
 
-
     @Autowired
     @InjectMocks
     UserService userService;
-
-
-    @Autowired
-    @InjectMocks
-    TaskService taskService;
 
     private HttpHeaders setHeader(String token)
     {
@@ -73,7 +67,6 @@ class AuthorizationTests {
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
-
 
     // REG NEW USER
     @Order(1)
@@ -229,21 +222,36 @@ class AuthorizationTests {
     @Test
     public void UserController_changeAvailableTaskStatus_200()
     {
-        HttpHeaders headers = setHeader(tokenUser_malebranche);
+        ChangeTaskStatusDTO dto = new ChangeTaskStatusDTO("IN_PROGRESS");
 
-        HttpEntity<?> request = new HttpEntity<>(setHeader(tokenUser_malebranche));
+        HttpEntity<ChangeTaskStatusDTO> request = new HttpEntity<>(dto, setHeader(tokenUser_malebranche));
 
-        String taskHeader = "Deploy";
-        String status = "CLOSED";
 
         ResponseEntity<OkResponse> response = testRestTemplate
-                .exchange("/api/v1/panel/task/Deploy/change/status/taskHeader=Deploy&status=CLOSED",
+                .exchange("/api/v1/panel/task/header/change/status",
                         HttpMethod.PUT,
                         request,
                         OkResponse.class);
+        log.info(response.getBody().getMessage());
         Assertions.assertEquals(HttpStatus.OK, response.getBody().getStatus());
     }
 
+    @Order(12)
+    @Test
+    public void AdminController_changeAvailableTaskPriority_200()
+    {
+        ChangeTaskPriorityDTO dto = new ChangeTaskPriorityDTO("LOW");
+        dto.setPriority("LOW");
+        HttpEntity<ChangeTaskPriorityDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<AppError> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/change/priority",
+                        HttpMethod.PUT,
+                        request,
+                        AppError.class);
+        log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
 
 
 }

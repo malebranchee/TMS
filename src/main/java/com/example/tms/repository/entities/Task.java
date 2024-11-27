@@ -20,19 +20,19 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_seq")
     private Long id;
 
-    @NotBlank
+
     @Column(name = "header")
     private String header;
 
-    @NotBlank
+
     @Column(name = "description")
     private String description;
 
-    @NotBlank
+
     @Column(name = "status")
     private String status;
 
-    @NotBlank
+
     @Column(name = "priority")
     private String priority;
 
@@ -48,7 +48,6 @@ public class Task {
     private List<User> executors;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "author_id")
     private User author;
 
     protected Task(){}
@@ -63,6 +62,8 @@ public class Task {
         this.executors = executors;
         this.author = author;
     }
+
+
 
     public enum Status
     {
