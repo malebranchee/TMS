@@ -47,9 +47,16 @@ public class ErrorController {
 
     @ExceptionHandler(HttpRetryException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ResponseEntity<?> resourceAccessDeniedException(HttpRetryException ex)
+    public ResponseEntity<?> resourceAccessDeniedException()
     {
         return new ResponseEntity<>("Wrong attempt to log in!", HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(HttpClientErrorException.MethodNotAllowed.class)
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    public ResponseEntity<?> methodNotAllowedException()
+    {
+        return new ResponseEntity<>("You dont have permission to manage this.", HttpStatus.METHOD_NOT_ALLOWED);
     }
 
 }

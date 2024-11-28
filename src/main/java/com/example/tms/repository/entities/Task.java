@@ -69,7 +69,8 @@ public class Task {
     {
         CLOSED,
         IN_PROGRESS,
-        CREATED
+        CREATED,
+        WAITING
     }
     public enum Priority
     {

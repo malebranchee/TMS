@@ -1,6 +1,8 @@
 package com.example.tms.controllers;
 
+import com.example.tms.dtos.ChangeTaskDescriptionDTO;
 import com.example.tms.dtos.ChangeTaskPriorityDTO;
+import com.example.tms.dtos.ExecutorNamesDTO;
 import com.example.tms.dtos.TaskDto;
 import com.example.tms.services.TaskService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -42,6 +44,7 @@ public class AdminController {
     public ResponseEntity<?> changePriority(
             @Parameter(name = "Task name that is @PathVariable value", example = "Deploy") @PathVariable String taskHeader,
             @Parameter(name = "New priority", description = "Available: HIGH, MEDIUM, LOW.")
+            @RequestBody
             ChangeTaskPriorityDTO dto)
     {
         return taskService.changePriority(taskHeader, dto);
@@ -52,18 +55,18 @@ public class AdminController {
     public ResponseEntity<?> changeDescription(
             @Parameter(name = "Task name that is @PathVariable value", example = "Deploy") @PathVariable String taskHeader,
                                                @Parameter(name = "New description", example = "Its easy to do!")
-                                               @RequestParam @NotBlank String  description)
+                                               @RequestBody ChangeTaskDescriptionDTO dto)
     {
-        return taskService.changeDescription(taskHeader, description);
+        return taskService.changeDescription(taskHeader, dto);
     }
 
     @Operation(summary = "Adds executors to the task")
     @PutMapping("/task/{taskHeader}/add/executors")
     public ResponseEntity<?> addExecutors(@PathVariable String taskHeader,
                                           @Parameter(name = "Executors name list")
-                                          @RequestParam @NotBlank List<String> executorNames)
+                                          @RequestBody ExecutorNamesDTO dto)
     {
-        return taskService.addExecutors(taskHeader, executorNames);
+        return taskService.addExecutors(taskHeader, dto);
     }
 
     @Operation(summary = "Removes executors from the task")
@@ -71,8 +74,8 @@ public class AdminController {
     public ResponseEntity<?> removeExecutors(
             @Parameter(name = "Task name that is @PathVariable value", example = "Deploy")  @PathVariable String taskHeader,
                                              @Parameter(name = "Executors name list")
-                                             @RequestParam @NotBlank List<String> executorNames)
+                                             @RequestBody ExecutorNamesDTO dto)
     {
-        return taskService.deleteExecutors(taskHeader, executorNames);
+        return taskService.deleteExecutors(taskHeader, dto);
     }
 }

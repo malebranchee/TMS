@@ -45,6 +45,7 @@ class AuthorizationTests {
     private static String tokenUser_malebranche;
     // pablo - nickname of test user entity ADMIN
     private static String tokenAdmin_pablo;
+    private static String tokenUser_zero;
 
     @Mock
     RoleRepository repository;
@@ -244,14 +245,110 @@ class AuthorizationTests {
         dto.setPriority("LOW");
         HttpEntity<ChangeTaskPriorityDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
 
+        ResponseEntity<TaskDto> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/change/priority",
+                        HttpMethod.PUT,
+                        request,
+                        TaskDto.class);
+        log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Order(13)
+    @Test
+    public void AdminController_changeAvailableTaskPriorityWithWrongPriority_400()
+    {
+        ChangeTaskPriorityDTO dto = new ChangeTaskPriorityDTO("Normalno");
+        HttpEntity<ChangeTaskPriorityDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
         ResponseEntity<AppError> response = testRestTemplate
                 .exchange("/api/v1/panel/admin/task/header/change/priority",
                         HttpMethod.PUT,
                         request,
                         AppError.class);
         log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST  , response.getStatusCode());
+    }
+
+    @Order(14)
+    @Test
+    public void AdminController_changeAvailableTaskDescription_200()
+    {
+        ChangeTaskDescriptionDTO dto = new ChangeTaskDescriptionDTO("Ny vot takaya zadacha yoooo");
+        HttpEntity<ChangeTaskDescriptionDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<TaskDto> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/change/description",
+                        HttpMethod.PUT,
+                        request,
+                        TaskDto.class);
+        log.info(response.getBody().toString());
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
+    @Order(15)
+    @Test
+    public void AdminController_regNewUserZero_201()
+    {
+        ResponseEntity<UserDto> response = testRestTemplate.postForEntity(
+                "/api/v1/registration",
+                new RegistrationUserDto(
+                        "zero@mail.ru",
+                        "zero",
+                        "123",
+                        "123"),
+                UserDto.class);
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    }
+
+    // ADMIN
+    @Order(16)
+    @Test
+    public void AuthenticationTest_initUserZero_200() {
+        ResponseEntity<JwtResponse> response = testRestTemplate.postForEntity(
+                "/api/v1/auth",
+                new JwtRequest(
+                        "zero@mail.ru",
+                        "123"
+                ), JwtResponse.class);
+        tokenUser_zero = response.getBody().getAccess_token();
+    }
+
+    @Order(17)
+    @Test
+    public void AdminController_addExecutorsToTask_200()
+    {
+        List<String> executors = new ArrayList<>();
+        executors.add("zero");
+        ExecutorNamesDTO dto = new ExecutorNamesDTO(executors);
+        HttpEntity<ExecutorNamesDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<TaskDto> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/add/executors",
+                        HttpMethod.PUT,
+                        request,
+                        TaskDto.class);
+        log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+
+    @Order(18)
+    @Test
+    public void AdminController_removeExecutorsFromTask_200()
+    {
+        List<String> executors = new ArrayList<>();
+        executors.add("zero");
+        ExecutorNamesDTO dto = new ExecutorNamesDTO(executors);
+        HttpEntity<ExecutorNamesDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<TaskDto> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/remove/executors",
+                        HttpMethod.DELETE,
+                        request,
+                        TaskDto.class);
+        log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
 
 }

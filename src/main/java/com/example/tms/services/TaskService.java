@@ -1,9 +1,6 @@
 package com.example.tms.services;
 
-import com.example.tms.dtos.ChangeTaskPriorityDTO;
-import com.example.tms.dtos.ChangeTaskStatusDTO;
-import com.example.tms.dtos.CommentDto;
-import com.example.tms.dtos.TaskDto;
+import com.example.tms.dtos.*;
 import com.example.tms.exceptions.AppError;
 import com.example.tms.exceptions.OkResponse;
 import com.example.tms.repository.TaskRepository;
@@ -191,52 +188,60 @@ public class TaskService {
         }
     }
 
-    public ResponseEntity<?> changeDescription(String taskHeader, String description)
+    public ResponseEntity<?> changeDescription(String taskHeader, ChangeTaskDescriptionDTO dto)
     {
         Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
         try{
-            task.setDescription(description);
+            task.setDescription(dto.getDescription());
             save(task);
-            return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.CREATED);
+            return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.OK);
         } catch (IllegalArgumentException illegalArgumentException)
         {
             return new ResponseEntity<>(new AppError(illegalArgumentException.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
-    public ResponseEntity<?> addExecutors(String taskHeader, List<String> executorNames)
+    public ResponseEntity<?> addExecutors(String taskHeader, ExecutorNamesDTO dto)
     {
         try{
             Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
             List<User> executors = task.getExecutors();
-            executors.addAll(executorNames
+            executors.addAll(dto.getExecutorNames()
                     .stream()
                     .filter(name -> userService.findByNickname(name).isPresent())
                     .map(name -> userService.findByNickname(name).get())
                     .toList());
             task.setExecutors(executors);
+            if (task.getStatus().equals("WAITING") || task.getStatus().equals("CLOSED"))
+            {
+                task.setStatus("IN_PROGRESS");
+            }
             save(task);
-            return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.CREATED);
+            return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.OK);
         } catch (NoSuchElementException noSuchElementException)
         {
             return new ResponseEntity<>(new AppError(noSuchElementException.getMessage()), HttpStatus.BAD_REQUEST);
         }
     }
 
-    public ResponseEntity<?> deleteExecutors(String taskHeader, List<String> executorNames)
+    public ResponseEntity<?> deleteExecutors(String taskHeader, ExecutorNamesDTO dto)
     {
         try{
             Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
             List<User> executors = task.getExecutors();
-            executorNames
+            dto.getExecutorNames()
                     .stream()
                     .filter(name -> userService.findByNickname(name).isPresent())
                     .map(name -> userService.findByNickname(name).get())
                     .toList()
                     .forEach(executors::remove);
             task.setExecutors(executors);
+            if (executors.isEmpty())
+            {
+                task.setStatus("WAITING");
+            }
             save(task);
-            return ResponseEntity.ok(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()));
+            return new ResponseEntity<>(new TaskDto(task.getHeader(), task.getDescription(), task.getPriority(), task.getExecutors().stream().map(User::getNickname).toList()), HttpStatus.OK);
         } catch (NoSuchElementException noSuchElementException)
         {
             return new ResponseEntity<>(new AppError(noSuchElementException.getMessage()), HttpStatus.BAD_REQUEST);

@@ -9,4 +9,5 @@ import lombok.Data;
 public class ChangeTaskDescriptionDTO {
     @NotEmpty
     private String description;
+    public ChangeTaskDescriptionDTO(){};
 }
