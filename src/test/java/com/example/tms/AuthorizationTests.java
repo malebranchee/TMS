@@ -1,83 +1,357 @@
 package com.example.tms;
 
-import com.example.tms.controllers.AuthenticationController;
 import com.example.tms.dtos.*;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import com.example.tms.exceptions.AppError;
+import com.example.tms.exceptions.OkResponse;
+import com.example.tms.repository.RoleRepository;
+import com.example.tms.repository.TaskRepository;
+import com.example.tms.repository.UserRepository;
+import com.example.tms.repository.entities.User;
+import com.example.tms.services.RoleService;
+import com.example.tms.services.TaskService;
+import com.example.tms.services.UserService;
+import org.aspectj.lang.annotation.Before;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Headers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.autoconfigure.web.client.RestClientTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClient;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 
-@ContextConfiguration(classes = AuthorizationTests.class)
-@RestClientTest(AuthenticationController.class)
-class AuthorizationTests
-{
+
+// Выполнение тестов подразумевает под собой пустую базу данных.
+// Таблицы БД создаются после старта сервера из бина DataBaseUtilConfig
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class AuthorizationTests {
+
     private static final Logger log = LoggerFactory.getLogger(AuthorizationTests.class);
-    private final RestClient restClient = RestClient.create();
+    @Autowired
+    TestRestTemplate testRestTemplate;
+    // malebranche - nickname of test user entity USER
+    private static String tokenUser_malebranche;
+    // pablo - nickname of test user entity ADMIN
+    private static String tokenAdmin_pablo;
+    private static String tokenUser_zero;
 
-    @Test
-    public void RegistrationTest_shouldReturn201onCreatingNotExistedUser()
+    @Mock
+    RoleRepository repository;
+
+    @Mock
+    TaskRepository taskRepository;
+
+    @Autowired
+    @InjectMocks
+    RoleService roleService;
+
+    @Autowired
+    @InjectMocks
+    UserService userService;
+
+    private HttpHeaders setHeader(String token)
     {
-        String uri = "http://localhost:8080/api/v1/registration";
-        RegistrationUserDto registrationUserDto = new RegistrationUserDto("pablo", "123", "123");
-        ResponseEntity<?> response = restClient.post()
-                .uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(registrationUserDto).retrieve().toEntity(UserDto.class);
-        HttpEntity<UserDto> user = new HttpEntity(response.getBody(), response.getHeaders());
-        Assertions.assertEquals(user.getBody().getLogin(), registrationUserDto.getLogin());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
+
+    // REG NEW USER
+    @Order(1)
+    @Test
+    public void RegistrationTest_shouldReturnOnExistsUserAuthorization_200() {
+        ResponseEntity<UserDto> response = testRestTemplate.postForEntity(
+                "/api/v1/registration",
+                new RegistrationUserDto(
+                        "malebranche@mail.ru",
+                        "malebranche",
+                        "123",
+                        "123"),
+                UserDto.class);
         Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
-
     }
 
+    // malebranche user
+    @Order(2)
     @Test
-    public void RegistrationTest_shouldReturnBadRequestOnExistsUserAuthorization()
+    public void AuthenticationTest_shouldReturnOkAndJwtTokensResponse_200()
     {
-        String uri = "http://localhost:8080/api/v1/registration";
-        RegistrationUserDto registrationUserDto = new RegistrationUserDto("pablo", "123", "123");
-        try {
-            ResponseEntity<?> response = restClient.post()
-                    .uri(uri)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(registrationUserDto).retrieve().toEntity(UserDto.class);
-        } catch (HttpClientErrorException e)
-        {
-            log.info(e.getMessage());
-        }
+        ResponseEntity<JwtResponse> response = testRestTemplate.postForEntity(
+                "/api/v1/auth",
+                new JwtRequest(
+                        "malebranche@mail.ru",
+                        "123"
+                ), JwtResponse.class);
+        tokenUser_malebranche = response.getBody().getAccess_token();
+
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
+    // pablo ADMIN
+    @Order(3)
     @Test
-    public void AuthenticationTest_shouldReturnOkAndJWT()
+    public void RegistrationTest_regNewUser_201()
     {
-        String uri = "http://localhost:8080/api/v1/auth";
-        JwtRequest jwtRequest = new JwtRequest("pablo", "123");
-        ResponseEntity<?> response = restClient.post()
-                .uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(jwtRequest).retrieve().toEntity(JwtResponse.class);
-        HttpEntity<JwtResponse> jwtResponseHttpEntity = new HttpEntity(response.getBody(), response.getHeaders());
-        Assertions.assertEquals(200, response.getStatusCode().value());
-        Assertions.assertTrue(jwtResponseHttpEntity.hasBody());
+        ResponseEntity<UserDto> response = testRestTemplate.postForEntity(
+                "/api/v1/registration",
+                new RegistrationUserDto(
+                        "paho@mail.ru",
+                        "pablo",
+                        "123",
+                        "123"),
+                UserDto.class);
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    }
+
+    // ADMIN
+    @Order(4)
+    @Test
+    public void AuthenticationTest_initAdminUser_200()
+    {
+        ResponseEntity<JwtResponse> response = testRestTemplate.postForEntity(
+                "/api/v1/auth",
+                new JwtRequest(
+                        "paho@mail.ru",
+                        "123"
+                ), JwtResponse.class);
+        tokenAdmin_pablo = response.getBody().getAccess_token();
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+
+    @Order(5)
+    @Test
+    public void UserController_getAllMyTasksByMalebrancheShouldReturnNoTasks_200()
+    {
+        HttpEntity<String> request = new HttpEntity<>(setHeader(tokenUser_malebranche));
+
+        ResponseEntity<OkResponse> response = testRestTemplate
+                .exchange("/api/v1/panel/get/tasks/my", HttpMethod.GET, request, OkResponse.class);
+        Assertions.assertEquals("No tasks to do, chill :)", response.getBody().getMessage());
+    }
+
+    @Order(6)
+    @Test
+    public void UserController_getAllTasksOfUserPabloByMalebranche_200()
+    {
+        HttpEntity<String> request = new HttpEntity<>(setHeader(tokenUser_malebranche));
+        ResponseEntity<OkResponse> response = testRestTemplate
+                .exchange("/api/v1/panel/get/tasks/of/pablo",
+                        HttpMethod.GET,
+                        request,
+                        OkResponse.class);
+        Assertions.assertEquals(response.getBody().getStatus(), HttpStatus.OK);
 
     }
 
-    /*@Test
-    public void RefreshJWTTest_shouldReturnOkAndChangeToken()
+
+    @Order(7)
+    @Test
+    public void AdminController_initAdminAuthoritiesToPablo()
     {
-        String uri = "http://localhost:8080/api/v1/refresh";
-        RefreshTokenRequest refreshTokenRequest = new RefreshTokenRequest("eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6WyJST0xFX1VTRVIiXSwic3ViIjoicGFibG8iLCJpYXQiOjE3MzIyNzUyOTIsImV4cCI6MTczMjI3NjE5Mn0.egYYvOuOnKZcrnF7hdoahCpmZkhS7OAbnMzut_VFHz1h1XkwLEEfZwJd0M_mPHV-");
-        ResponseEntity<?> response = restClient.post()
-                .uri(uri)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(refreshTokenRequest).retrieve().toEntity(JwtResponse.class);
-        HttpEntity<JwtResponse> jwtResponseHttpEntity = new HttpEntity(response.getBody(), response.getHeaders());
-        Assertions.assertEquals(refreshTokenRequest.getToken(), jwtResponseHttpEntity.getBody().getToken());
-    }*/
+        User user = userService.findByNickname("pablo").orElseThrow();
+        user.addRole(roleService.findByName("ROLE_ADMIN").orElseThrow());
+        userService.save(user);
+    }
+
+    @Order(8)
+    @Test
+    public void AdminController_createTask_201()
+    {
+        List<String> l = new ArrayList<>();
+        l.add("malebranche");
+        TaskDto dto = new TaskDto("header", "description", "HIGH", l);
+        HttpEntity<TaskDto> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<TaskDto> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/tasks/create",
+                        HttpMethod.POST,
+                        request,
+                        TaskDto.class);
+
+        Assertions.assertEquals(request.getBody(), response.getBody());
+    }
+
+    @Order(9)
+    @Test
+    public void AdminController_createTaskWithExistingHeader_400()
+    {
+        List<String> l = new ArrayList<>();
+        l.add("malebranche");
+        TaskDto dto = new TaskDto("header", "description", "HIGH", l);
+        HttpEntity<TaskDto> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<AppError> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/tasks/create",
+                        HttpMethod.POST,
+                        request,
+                        AppError.class);
+
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), response.getBody().getStatus());
+        Assertions.assertTrue(response.getBody().getMessage().contains("already exists"));
+    }
+
+
+    @Order(10)
+    @Test
+    public void UserController_getAllTasksOfUser_200()
+    {
+        HttpEntity<OkResponse> request = new HttpEntity<>(setHeader(tokenUser_malebranche));
+        ResponseEntity<OkResponse> response = testRestTemplate
+                .exchange("/api/v1/panel/get/tasks/my",
+                        HttpMethod.GET,
+                        request,
+                        OkResponse.class);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        log.info(response.getBody().getMessage());
+    }
+
+    @Order(11)
+    @Test
+    public void UserController_changeAvailableTaskStatus_200()
+    {
+        ChangeTaskStatusDTO dto = new ChangeTaskStatusDTO("IN_PROGRESS");
+
+        HttpEntity<ChangeTaskStatusDTO> request = new HttpEntity<>(dto, setHeader(tokenUser_malebranche));
+
+
+        ResponseEntity<OkResponse> response = testRestTemplate
+                .exchange("/api/v1/panel/task/header/change/status",
+                        HttpMethod.PUT,
+                        request,
+                        OkResponse.class);
+        log.info(response.getBody().getMessage());
+        Assertions.assertEquals(HttpStatus.OK, response.getBody().getStatus());
+    }
+
+    @Order(12)
+    @Test
+    public void AdminController_changeAvailableTaskPriority_200()
+    {
+        ChangeTaskPriorityDTO dto = new ChangeTaskPriorityDTO("LOW");
+        dto.setPriority("LOW");
+        HttpEntity<ChangeTaskPriorityDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<TaskDto> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/change/priority",
+                        HttpMethod.PUT,
+                        request,
+                        TaskDto.class);
+        log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Order(13)
+    @Test
+    public void AdminController_changeAvailableTaskPriorityWithWrongPriority_400()
+    {
+        ChangeTaskPriorityDTO dto = new ChangeTaskPriorityDTO("Normalno");
+        HttpEntity<ChangeTaskPriorityDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<AppError> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/change/priority",
+                        HttpMethod.PUT,
+                        request,
+                        AppError.class);
+        log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST  , response.getStatusCode());
+    }
+
+    @Order(14)
+    @Test
+    public void AdminController_changeAvailableTaskDescription_200()
+    {
+        ChangeTaskDescriptionDTO dto = new ChangeTaskDescriptionDTO("Ny vot takaya zadacha yoooo");
+        HttpEntity<ChangeTaskDescriptionDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<TaskDto> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/change/description",
+                        HttpMethod.PUT,
+                        request,
+                        TaskDto.class);
+        log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Order(15)
+    @Test
+    public void AdminController_regNewUserZero_201()
+    {
+        ResponseEntity<UserDto> response = testRestTemplate.postForEntity(
+                "/api/v1/registration",
+                new RegistrationUserDto(
+                        "zero@mail.ru",
+                        "zero",
+                        "123",
+                        "123"),
+                UserDto.class);
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    }
+
+    // ADMIN
+    @Order(16)
+    @Test
+    public void AuthenticationTest_initUserZero_200() {
+        ResponseEntity<JwtResponse> response = testRestTemplate.postForEntity(
+                "/api/v1/auth",
+                new JwtRequest(
+                        "zero@mail.ru",
+                        "123"
+                ), JwtResponse.class);
+        tokenUser_zero = response.getBody().getAccess_token();
+    }
+
+    @Order(17)
+    @Test
+    public void AdminController_addExecutorsToTask_200()
+    {
+        List<String> executors = new ArrayList<>();
+        executors.add("zero");
+        ExecutorNamesDTO dto = new ExecutorNamesDTO(executors);
+        HttpEntity<ExecutorNamesDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<TaskDto> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/add/executors",
+                        HttpMethod.PUT,
+                        request,
+                        TaskDto.class);
+        log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+
+    @Order(18)
+    @Test
+    public void AdminController_removeExecutorsFromTask_200()
+    {
+        List<String> executors = new ArrayList<>();
+        executors.add("zero");
+        ExecutorNamesDTO dto = new ExecutorNamesDTO(executors);
+        HttpEntity<ExecutorNamesDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<TaskDto> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/task/header/remove/executors",
+                        HttpMethod.DELETE,
+                        request,
+                        TaskDto.class);
+        log.info(response.getBody().toString());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
 }

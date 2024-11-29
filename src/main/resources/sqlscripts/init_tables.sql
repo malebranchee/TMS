@@ -2,8 +2,8 @@ CREATE TABLE IF NOT EXISTS users
 (
     id SERIAL PRIMARY KEY,
     login CHARACTER(30),
+    nickname CHARACTER(30),
     password CHARACTER(60)
-
 );
 
 CREATE TABLE IF NOT EXISTS roles
@@ -22,6 +22,14 @@ CREATE TABLE IF NOT EXISTS tasks
     comments varchar(100)
 );
 
+CREATE TABLE IF NOT EXISTS comments
+(
+    id SERIAL PRIMARY KEY,
+    author varchar(30),
+    text varchar(100),
+    date date
+);
+
 CREATE TABLE IF NOT EXISTS roles_x_users
 (
     user_id bigint not null,
@@ -36,7 +44,17 @@ CREATE TABLE IF NOT EXISTS tasks_x_users
     task_id bigint not null,
     executor_id bigint not null,
     author_id bigint not null,
+    comment_id bigint not null,
     PRIMARY KEY(task_id),
     FOREIGN KEY(executor_id) references users(id),
+    FOREIGN KEY(author_id) references users(id),
+    FOREIGN KEY(comment_id) references comments(id)
+);
+
+CREATE TABLE IF NOT EXISTS comments_x_authors
+(
+    comment_id bigint not null,
+    author_id bigint not null,
+    PRIMARY KEY(comment_id),
     FOREIGN KEY(author_id) references users(id)
 );

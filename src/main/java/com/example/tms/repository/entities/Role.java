@@ -1,13 +1,15 @@
 package com.example.tms.repository.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
 @Table(name = "roles")
-@Data
+@AllArgsConstructor
+@Setter
+@Getter
 @SequenceGenerator(name = "role_seq", sequenceName = "role_id_seq", allocationSize = 1)
 public class Role {
     @Id
@@ -18,8 +20,14 @@ public class Role {
     @Column(name = "name")
     private String name;
 
+    protected Role(){}
+
     @ManyToMany(mappedBy = "roles", fetch = FetchType.EAGER)
     private List<User> users;
 
-
+    @Override
+    public String toString()
+    {
+        return String.format("%s", name);
+    }
 }
