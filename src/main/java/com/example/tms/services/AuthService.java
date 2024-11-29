@@ -63,7 +63,8 @@ public class AuthService {
                     "Password mismatch"), HttpStatus.BAD_REQUEST);
         }
 
-        if (userService.ifUserNotExists(registrationUserDto.getLogin())) {
+
+        if (userService.ifUserNotExists(registrationUserDto.getLogin()) && userService.findByNickname(registrationUserDto.getNickname()).isEmpty()) {
 
             registrationUserDto.setPassword(new BCryptPasswordEncoder()
                     .encode(registrationUserDto.getPassword()));

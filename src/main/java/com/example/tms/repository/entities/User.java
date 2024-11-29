@@ -1,9 +1,6 @@
 package com.example.tms.repository.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -51,45 +48,6 @@ public class User {
     public User() {
     }
 
-    // Tasks to execute methods
-    // -----------------------------------
-    public void deleteAllTasksToExecute()
-    {
-        tasksToExecute.clear();
-    }
-
-    public void addTaskToExecute(Task taskToExecute)
-    {
-        if (isNull(taskToExecute))
-            tasksToExecute = new ArrayList<>();
-        tasksToExecute.add(taskToExecute);
-    }
-
-    public void deleteTaskToExecute(Task taskToExecute)
-    {
-        tasksToExecute.remove(taskToExecute);
-    }
-    // -----------------------------------
-    // Tasks to manage methods
-    // -----------------------------------
-
-    public void deleteAllTasksToManage()
-    {
-        tasksToManage.clear();
-    }
-
-    public void addTaskToManage(Task taskToManage)
-    {
-        if (isNull(taskToManage))
-            tasksToManage = new ArrayList<>();
-        tasksToManage.add(taskToManage);
-    }
-
-    public void deleteTaskToManage(Task taskToManage)
-    {
-        tasksToManage.remove(taskToManage);
-    }
-    // -----------------------------------
 
     public void addRole(Role role) {
         if (isNull(roles))

@@ -1,12 +1,8 @@
 package com.example.tms.repository.entities;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.hibernate.validator.constraints.UniqueElements;
-
 import java.util.ArrayList;
 import java.util.List;
 

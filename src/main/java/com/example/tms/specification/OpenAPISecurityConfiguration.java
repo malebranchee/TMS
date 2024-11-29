@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition(
         info =@Info(
                 title = "Task Management API",
-                version = "1.0 SNAPSHOT",
+                version = "RELEASE 1.0",
                 contact = @Contact(
                         name = "Pavel Gurin", email = "paho3998@mail.ru", url = "https://github.com/malebranchee?tab=repositories"
                 ),

@@ -1,7 +1,6 @@
-package com.example.tms.testenv;
+package com.example.tms.database;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;

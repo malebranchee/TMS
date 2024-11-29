@@ -3,25 +3,27 @@ version: '3.8'
 services:
   tms:
     container_name: TMS
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     depends_on:
       - db
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
-      - SPRING_DATASOURCE_PASSWORD=123
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${username}
+      - SPRING_DATASOURCE_PASSWORD=${password}
+      - SPRING_DATASOURCE_USERNAME=${username}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - SERVER_PORT=8082
+    ports:
+      - '8081:8082'
 
   db:
-    container_name: post
+    container_name: db
     image: postgres
     environment:
-      POSTGRES_PASSWORD: 123
-      POSTGRES_USER: postgres
+    - POSTGRES_PASSWORD=${password}
+    - POSTGRES_USER=${username}
     ports:
-      - "5432"
-    # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
-    # (Adding the "ports" property to this file will not forward from a Codespace.)
+      - '5432:5432'
+
+

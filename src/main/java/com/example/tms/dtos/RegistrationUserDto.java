@@ -1,5 +1,6 @@
 package com.example.tms.dtos;
 
+import com.example.tms.exceptions.validators.ConstraintNicknameValidator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -21,6 +22,7 @@ public class RegistrationUserDto {
     @Schema(description = "Nickname of new user (do not confuse with login!). Used for interaction with tasks.", minLength = 4, maxLength = 30, example = "pablo", defaultValue = "pablo", nullable = false)
     @NotBlank(message = "Nickname field could not be empty or blanked!")
     @Size(min = 4, max = 30, message = "Minimal nickname length - 4 characters, maximum - 15")
+    @ConstraintNicknameValidator
     private String nickname;
 
     @Schema(description = "Password of new user", minLength = 3, maxLength = 15, example = "123", defaultValue = "123", nullable = false)

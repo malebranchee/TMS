@@ -5,6 +5,7 @@ import com.example.tms.dtos.RefreshTokenDto;
 import com.example.tms.dtos.RegistrationUserDto;
 import com.example.tms.services.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
@@ -23,7 +24,11 @@ public class AuthenticationController {
 
     @Operation(summary = "Authentication method", description = "Returns access token in response body")
     @PostMapping("/auth")
-    public ResponseEntity<?> authorizeUser(@RequestBody @Validated JwtRequest authRequest)
+    public ResponseEntity<?> authorizeUser(
+            @Parameter(name = "Authentication request", description = "Enter your credentials")
+            @RequestBody
+            @Validated
+            JwtRequest authRequest)
     {
 
         return authService.createAuthToken(authRequest);
@@ -31,14 +36,21 @@ public class AuthenticationController {
 
     @Operation(summary = "Refreshing token method", description = "Refreshes access token")
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody @Validated RefreshTokenDto refreshTokenRequest)
+    public ResponseEntity<?> refreshToken(
+            @Parameter(name = "URI for changing tokens. NOT FUNCTIONAL! Added for future.")
+            @RequestBody
+            @Validated
+            RefreshTokenDto refreshTokenRequest)
     {
         return authService.refreshToken(refreshTokenRequest);
     }
 
-    @Operation(summary = "User registration method", description = "Creates new user with role 'USER'")
+    @Operation(summary = "User registration method", description = "Creates new user with role USER")
     @PostMapping("/registration")
-    public ResponseEntity<?> registration(@RequestBody @Validated RegistrationUserDto registrationUserDto)
+    public ResponseEntity<?> registration(
+            @RequestBody
+            @Validated
+            RegistrationUserDto registrationUserDto)
     {
         return authService.createNewUser(registrationUserDto);
     }
