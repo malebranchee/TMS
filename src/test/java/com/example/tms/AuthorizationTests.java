@@ -34,6 +34,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 
+
+// Выполнение тестов подразумевает под собой пустую базу данных.
+// Таблицы БД создаются после старта сервера из бина DataBaseUtilConfig
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AuthorizationTests {

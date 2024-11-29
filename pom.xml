@@ -99,6 +99,5 @@
                 </executions>
             </plugin>
         </plugins>
-        <finalName>TMS</finalName>
     </build>
 </project>
