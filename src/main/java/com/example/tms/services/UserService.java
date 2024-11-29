@@ -5,7 +5,6 @@ import com.example.tms.repository.UserRepository;
 import com.example.tms.repository.entities.User;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

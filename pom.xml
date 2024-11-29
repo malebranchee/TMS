@@ -9,12 +9,13 @@
     </parent>
     <groupId>com.example</groupId>
     <artifactId>TMS</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>RELEASE 1.0</version>
     <name>TMS</name>
     <description>TMS</description>
-
     <properties>
         <java.version>17</java.version>
+        <mainClass>TmsApplication</mainClass>
+        <packaging>jar</packaging>
     </properties>
     <dependencies>
         <dependency>
@@ -81,12 +82,6 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -94,7 +89,16 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.3.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                           <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
+        <finalName>TMS</finalName>
     </build>
 </project>
