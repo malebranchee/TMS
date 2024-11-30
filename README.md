@@ -1,6 +1,7 @@
 
 # Task Management System API
-# Release 1.0
+
+## **API for controlling lifecycle of tasks** 
 
 ## Tech Stack
 
@@ -15,7 +16,6 @@
 **- linux distributive;**
 
 **- installed and configured PostgreSQL server;**
-
 
 ## Deployment
 
