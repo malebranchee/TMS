@@ -7,7 +7,7 @@ public class NicknameValidator implements ConstraintValidator<ConstraintNickname
 
     @Override
     public boolean isValid(String s, ConstraintValidatorContext constraintValidatorContext) {
-        return s.contains("@$%^&*#!+");
+        return !s.contains("@$%^&*#!+");
     }
 
     @Override

@@ -2,19 +2,19 @@ package com.example.tms.repository;
 
 import com.example.tms.repository.entities.Task;
 import com.example.tms.repository.entities.User;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TaskRepository extends CrudRepository<Task, Long> {
+public interface TaskRepository extends JpaRepository<Task, Long> {
     Optional<Task> findByHeader(String header);
-    Optional<Task> findByPriority(Task.Priority priority);
-    Optional<Task> findByAuthor(User author);
-    Optional<Task> findByStatus(Task.Status status);
-    Optional<Task> findByExecutors(List<User> executors);
-
-
+    Page<Task> findAllByStatus(String status, Pageable pageable);
+    Page<Task> findAllByPriority(String priority, Pageable pageable);
+    Page<Task> findAllByAuthor(User author, Pageable pageable);
+    Page<Task> findAllByExecutors(List<User> executor, Pageable pageable);
 }

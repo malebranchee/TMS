@@ -67,7 +67,7 @@ public class AdminController {
         return taskService.changeDescription(taskHeader, dto);
     }
 
-    @Operation(summary = "Adds executors to the task")
+    @Operation(summary = "Adds executors to the task", description = "If ")
     @PutMapping("/task/{taskHeader}/add/executors")
     public ResponseEntity<?> addExecutors(
             @PathVariable String taskHeader,
@@ -78,7 +78,7 @@ public class AdminController {
         return taskService.addExecutors(taskHeader, dto);
     }
 
-    @Operation(summary = "Removes executors from the task")
+    @Operation(summary = "Removes executors from the task", description = "If after removing, executor list is empty, then status sets up 'WAITING'")
     @DeleteMapping("/task/{taskHeader}/remove/executors")
     public ResponseEntity<?> removeExecutors(
             @Parameter(name = "Task name that is @PathVariable value", example = "Deploy")
@@ -89,4 +89,15 @@ public class AdminController {
     {
         return taskService.deleteExecutors(taskHeader, dto);
     }
+
+    @Operation(summary = "Removes task", description = "Removes task if its status is 'WAITING' or 'CLOSED', return OK, else return BAD REQUEST")
+    @DeleteMapping("/task/{taskHeader}/remove/task")
+    public ResponseEntity<?> removeTask(
+            @Parameter(name = "Task name that is @PathVariable value", example = "Deploy")
+            @PathVariable String taskHeader
+    )
+    {
+        return taskService.deleteTask(taskHeader);
+    }
+
 }

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,19 +31,25 @@ public class UserController {
     private final TaskService taskService;
 
     @Operation(summary = "Getting all tasks of current user", description = "Return all tasks of current user.")
-    @GetMapping("/get/tasks/my")
-    public ResponseEntity<?> showMyTasksToDo(Principal principal)
+    @GetMapping("/tasks/get/my")
+    public ResponseEntity<?> showMyTasksToDo(Principal principal,
+                                             @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "3") int size)
     {
-        return taskService.showMyTasksToDo(principal);
+
+        return taskService.showMyTasksToDo(principal, PageRequest.of(page, size));
     }
 
 
     @Operation(summary = "Getting all tasks of user", description = "Return all tasks of @PathVariable parameter user nickname.")
-    @GetMapping("/get/tasks/of/{nickname}")
-    public ResponseEntity<?> showTasksOfUser(@Parameter(description = "Nickname parameter that is @PathVariable value.", example = "pablo")
-                                                 @PathVariable String nickname)
+    @GetMapping("/tasks/get/of/{nickname}")
+    public ResponseEntity<?> showTasksOfUser(
+                                            @Parameter(description = "Nickname parameter that is @PathVariable value.", example = "pablo")
+                                            @PathVariable String nickname,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "3") int size)
     {
-        return taskService.showAllTasksOfUser(nickname);
+        return taskService.showAllTasksOfUser(nickname, PageRequest.of(page, size));
     }
 
     @Operation(summary = "Changing task status", description = "Put request to @PathVariable task header for changing task status.")
@@ -68,4 +75,26 @@ public class UserController {
         return taskService.addComment(principal, taskHeader, dto);
     }
 
+    @Operation(summary = "Paging and filtering tasks by status", description = "If 'status' not mentioned, returns all tasks")
+    @GetMapping("/tasks/get/by/status")
+    public ResponseEntity<?> getTasksByStatus(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "3") int size
+    )
+    {
+
+        return taskService.searchTasksByStatus(status, PageRequest.of(page, size));
+    }
+
+    @Operation(summary = "Paging and filtering tasks by priority", description = "If 'priority' not mentioned, returns all tasks")
+    @GetMapping("/tasks/get/by/priority")
+    public ResponseEntity<?> getTasksByPriority(
+            @RequestParam(required = false) String priority,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "3") int size
+    )
+    {
+        return taskService.searchTasksByPriority(priority, PageRequest.of(page, size));
+    }
 }

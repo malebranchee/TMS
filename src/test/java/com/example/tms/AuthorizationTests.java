@@ -6,6 +6,7 @@ import com.example.tms.exceptions.OkResponse;
 import com.example.tms.repository.RoleRepository;
 import com.example.tms.repository.TaskRepository;
 import com.example.tms.repository.UserRepository;
+import com.example.tms.repository.entities.Task;
 import com.example.tms.repository.entities.User;
 import com.example.tms.services.RoleService;
 import com.example.tms.services.TaskService;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.http.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -135,33 +137,9 @@ class AuthorizationTests {
     }
 
 
+
+
     @Order(5)
-    @Test
-    public void UserController_getAllMyTasksByMalebrancheShouldReturnNoTasks_200()
-    {
-        HttpEntity<String> request = new HttpEntity<>(setHeader(tokenUser_malebranche));
-
-        ResponseEntity<OkResponse> response = testRestTemplate
-                .exchange("/api/v1/panel/get/tasks/my", HttpMethod.GET, request, OkResponse.class);
-        Assertions.assertEquals("No tasks to do, chill :)", response.getBody().getMessage());
-    }
-
-    @Order(6)
-    @Test
-    public void UserController_getAllTasksOfUserPabloByMalebranche_200()
-    {
-        HttpEntity<String> request = new HttpEntity<>(setHeader(tokenUser_malebranche));
-        ResponseEntity<OkResponse> response = testRestTemplate
-                .exchange("/api/v1/panel/get/tasks/of/pablo",
-                        HttpMethod.GET,
-                        request,
-                        OkResponse.class);
-        Assertions.assertEquals(response.getBody().getStatus(), HttpStatus.OK);
-
-    }
-
-
-    @Order(7)
     @Test
     public void AdminController_initAdminAuthoritiesToPablo()
     {
@@ -170,13 +148,14 @@ class AuthorizationTests {
         userService.save(user);
     }
 
-    @Order(8)
+    @Order(6)
     @Test
     public void AdminController_createTask_201()
     {
         List<String> l = new ArrayList<>();
         l.add("malebranche");
-        TaskDto dto = new TaskDto("header", "description", "HIGH", l);
+        List<String> c = new ArrayList<>();
+        TaskDto dto = new TaskDto("header", "description", "CREATED", "HIGH", l, "pablo", c );
         HttpEntity<TaskDto> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
 
         ResponseEntity<TaskDto> response = testRestTemplate
@@ -186,6 +165,44 @@ class AuthorizationTests {
                         TaskDto.class);
 
         Assertions.assertEquals(request.getBody(), response.getBody());
+
+        dto = new TaskDto("Deploy", "This is description", "WAITING", "LOW", l, "", c );
+        request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
+        ResponseEntity<TaskDto> response2 = testRestTemplate
+                .exchange("/api/v1/panel/admin/tasks/create",
+                        HttpMethod.POST,
+                        request,
+                        TaskDto.class);
+
+    }
+
+    @Order(7)
+    @Test
+    public void UserController_getAllMyTasksShouldReturnTasks_200()
+    {
+        HttpEntity<String> request = new HttpEntity<>(setHeader(tokenUser_malebranche));
+        ResponseEntity<OkResponse> response = testRestTemplate
+                .exchange("/api/v1/panel/tasks/get/my",
+                        HttpMethod.GET,
+                        request,
+                        OkResponse.class);
+        log.info(response.getBody().getMessage());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Order(8)
+    @Test
+    public void UserController_getAllTasksOfUserPabloByMalebranche_200()
+    {
+        HttpEntity<String> request = new HttpEntity<>(setHeader(tokenUser_malebranche));
+        ResponseEntity<OkResponse> response = testRestTemplate
+                .exchange("/api/v1/panel/tasks/get/of/pablo?page=0&size=3",
+                        HttpMethod.GET,
+                        request,
+                        OkResponse.class);
+        log.info(response.getBody().getMessage());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+
     }
 
     @Order(9)
@@ -194,7 +211,8 @@ class AuthorizationTests {
     {
         List<String> l = new ArrayList<>();
         l.add("malebranche");
-        TaskDto dto = new TaskDto("header", "description", "HIGH", l);
+        List<String> c = new ArrayList<>();
+        TaskDto dto = new TaskDto("header", "description", "CREATED", "HIGH", l, "", c);
         HttpEntity<TaskDto> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
 
         ResponseEntity<AppError> response = testRestTemplate
@@ -214,7 +232,7 @@ class AuthorizationTests {
     {
         HttpEntity<OkResponse> request = new HttpEntity<>(setHeader(tokenUser_malebranche));
         ResponseEntity<OkResponse> response = testRestTemplate
-                .exchange("/api/v1/panel/get/tasks/my",
+                .exchange("/api/v1/panel/tasks/get/my",
                         HttpMethod.GET,
                         request,
                         OkResponse.class);
@@ -229,7 +247,6 @@ class AuthorizationTests {
         ChangeTaskStatusDTO dto = new ChangeTaskStatusDTO("IN_PROGRESS");
 
         HttpEntity<ChangeTaskStatusDTO> request = new HttpEntity<>(dto, setHeader(tokenUser_malebranche));
-
 
         ResponseEntity<OkResponse> response = testRestTemplate
                 .exchange("/api/v1/panel/task/header/change/status",
@@ -335,13 +352,46 @@ class AuthorizationTests {
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
-
     @Order(18)
+    @Test
+    public void UserController_addCommentOnTask_201()
+    {
+        CommentDto commentDto = new CommentDto("Good job)");
+        HttpEntity<CommentDto> request = new HttpEntity<>(commentDto, setHeader(tokenAdmin_pablo));
+
+        ResponseEntity<OkResponse> response = testRestTemplate
+                .exchange("/api/v1/panel/task/header/add/comment",
+                        HttpMethod.POST,
+                        request,
+                        OkResponse.class);
+        log.info(response.getBody().getMessage());
+        Assertions.assertTrue(response.getBody().getMessage().contains(commentDto.getComment()));
+    }
+
+    @Order(19)
+    @Test
+    public void getAllTasksByStatusPaging_200()
+    {
+        HttpEntity<?> request = new HttpEntity<>(setHeader(tokenAdmin_pablo));
+        ResponseEntity<PageableDto> response = testRestTemplate
+                .exchange("/api/v1/panel/tasks/get/by/status?status=IN_PROGRESS",
+                        HttpMethod.GET,
+                        request,
+                        PageableDto.class);
+        response.getBody().getObjectList().forEach(log::info);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertTrue(response.getBody().getObjectList().stream().anyMatch(o -> o.contains("IN_PROGRESS")));
+
+    }
+
+
+    @Order(20)
     @Test
     public void AdminController_removeExecutorsFromTask_200()
     {
         List<String> executors = new ArrayList<>();
         executors.add("zero");
+        executors.add("pablo");
         ExecutorNamesDTO dto = new ExecutorNamesDTO(executors);
         HttpEntity<ExecutorNamesDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
 
@@ -351,7 +401,22 @@ class AuthorizationTests {
                         request,
                         TaskDto.class);
         log.info(response.getBody().toString());
+
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
+    @Order(21)
+    @Test
+    public void getAllTasksByPriorityPaging_page()
+    {
+        HttpEntity<?> request = new HttpEntity<>(setHeader(tokenAdmin_pablo));
+        ResponseEntity<PageableDto> response = testRestTemplate
+                .exchange("/api/v1/panel/tasks/get/by/priority?priority=LOW",
+                        HttpMethod.GET,
+                        request,
+                        PageableDto.class);
+        response.getBody().getObjectList().forEach(log::info);
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertTrue(response.getBody().getObjectList().stream().anyMatch(o -> o.contains("LOW")));
+    }
 }
