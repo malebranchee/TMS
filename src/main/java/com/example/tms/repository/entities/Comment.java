@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
@@ -24,12 +25,7 @@ public class Comment {
     @JoinColumn(name = "author_id", nullable = false)
     private User authorOfComment;
 
-    @ManyToMany
-    @JoinTable(
-            name = "tasks_comments",
-            joinColumns = @JoinColumn(name = "comment_id"),
-            inverseJoinColumns = @JoinColumn(name = "task_id")
-    )
+    @ManyToMany(mappedBy = "comments")
     private List<Task> tasks;
 
     @NotBlank
@@ -40,7 +36,7 @@ public class Comment {
 
     @Getter
     @Column(name = "date")
-    private LocalDate date;
+    private LocalDateTime date;
 
     protected Comment(){}
 
@@ -48,12 +44,12 @@ public class Comment {
     {
         this.authorOfComment = authorOfComment;
         this.text = text;
-        this.date = LocalDate.now();
+        this.date = LocalDateTime.now();
     }
 
     @Override
     public String toString()
     {
-        return String.format("%s at %s : %s\n", authorOfComment.getNickname(), getDate().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)), getText());
+        return String.format("%s at %s : %s\n", authorOfComment.getNickname(), date.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)), getText());
     }
 }

@@ -58,7 +58,7 @@ public class User {
     @Override
     public String toString()
     {
-        return String.format("ID: %d, Login: %s, Roles : %s", id, login, roles.stream().map(Role::toString).toList());
+        return String.format("ID: %d, Login: %s, Nickname: %s, Roles : %s", id, login, nickname, roles.stream().map(Role::toString).toList());
     }
 
 }

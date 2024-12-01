@@ -32,7 +32,12 @@ public class Task {
     @Column(name = "priority")
     private String priority;
 
-    @ManyToMany(mappedBy = "tasks")
+    @ManyToMany
+    @JoinTable(
+            name = "tasks_comments",
+            joinColumns = @JoinColumn(name = "task_id"),
+            inverseJoinColumns = @JoinColumn(name = "comment_id")
+    )
     private List<Comment> comments;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -59,8 +64,6 @@ public class Task {
         this.author = author;
     }
 
-
-
     public enum Status
     {
         CLOSED,
@@ -78,9 +81,9 @@ public class Task {
     @Override
     public String toString()
     {
-        return String.format("ID: %d, Header: %s, Description: %s, Status: %s, " +
-                "Executors: %s, Author: %s, Comments: %s\n", id, header, description, status, executors.stream().map(User::toString).toList(),
-                author.getNickname(), comments.toString()) ;
+        return String.format("ID: %d, Header: %s, Description: %s, Status: %s, Priority: %s \n" +
+                " Executors: %s, Author: %s, Comments: %s\n", id, header, description, status, priority, executors.stream().map(User::getNickname).toList(),
+                author.getNickname(), comments.stream().map(Comment::toString).toList()) ;
     }
 
 }
