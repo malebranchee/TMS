@@ -2,7 +2,7 @@
 
 git pull
 
-sudo mvn clean package -DskipTests
+mvn clean package -DskipTests
 
 export username=$1
 export password=$2

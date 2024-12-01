@@ -29,9 +29,10 @@ public class TaskDto {
     @Size(min = 0, max = 100, message = "Max length of description field is 100 characters.")
     private String description;
 
-    @Schema(name = "Status of task", allowableValues = {"CREATED", "IN_PROGRESS", "CLOSED"})
+    @Schema(name = "Status of task", allowableValues = {"CREATED", "IN_PROGRESS", "CLOSED"}, hidden = true)
     @NotEmpty(message = "Status could not be blanked or empty value!")
     @Size(max = 30, message = "Max length of status field is 30 characters")//30
+
     private String status;
 
     @Schema(name = "Priority of task", allowableValues = {"HIGH", "MEDIUM", "LOW"})
@@ -39,18 +40,15 @@ public class TaskDto {
     @Size(max = 30, message = "Max length of header field is 30 characters")//30
     private String priority;
 
-
     @Schema(name = "List of executor names", maxLength = 30)
-    /*@NotBlank(message = "Executors name could not be blanked or empty value!")
-    @Size(max = 30, message = "Max length of nickname is 30 characters.")*/
     private List<String> executorNicknames;
 
     @Schema(hidden = true)
     @Nullable
     private String author;
 
-    @Schema(name = "List of comments", maxLength = 30)
+    @Schema(name = "List of comments", maxLength = 30, hidden = true)
+    @Nullable
     private List<String> comments;
-
 
 }

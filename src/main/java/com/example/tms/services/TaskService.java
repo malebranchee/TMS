@@ -8,34 +8,24 @@ import com.example.tms.repository.TaskRepository;
 import com.example.tms.repository.entities.Comment;
 import com.example.tms.repository.entities.Task;
 import com.example.tms.repository.entities.User;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 import java.security.Principal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Service
 @AllArgsConstructor
 public class TaskService {
-    private static final Logger log = LoggerFactory.getLogger(TaskService.class);
     @Autowired
     private final TaskRepository taskRepository;
     @Autowired
     private final UserService userService;
-    @Autowired
-    private final RoleService roleService;
     @Autowired
     private CommentRepository commentRepository;
 
@@ -106,21 +96,13 @@ public class TaskService {
 
             if ((user.getTasksToExecute().contains(task)
                     || user.getTasksToManage().contains(task)
-                    || user.getRoles().contains(roleService.findByName("ROLE_ADMIN").orElseThrow()))
+                    )
                     && Arrays.stream(Task.Status.values())
                     .anyMatch(t -> t.equals(Task.Status.valueOf(dto.getStatus()))))
             {
-                        if (dto.getStatus().equals("CLOSED"))
-                        {
-                            task.setStatus(Task.Status.CLOSED.name());
-                            user.getTasksToExecute().remove(task);
-                            user.getTasksToManage().remove(task);
-                        }
-                        else {
-                            task.setStatus(dto.getStatus());
-                        }
-                        save(task);
-                        return new ResponseEntity<>(new OkResponse("Status changed to " + dto.getStatus(), HttpStatus.OK), HttpStatus.OK);
+                task.setStatus(dto.getStatus());
+                save(task);
+                return new ResponseEntity<>(new OkResponse("Status changed to " + task.getStatus(), HttpStatus.OK), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new AppError(405, "You dont have permission to edit status!"), HttpStatus.METHOD_NOT_ALLOWED);
             }
@@ -272,16 +254,18 @@ public class TaskService {
         }
     }
 
-    public ResponseEntity<?> deleteTask(String taskHeader)
-    {
-        Task task = findByHeader(taskHeader).orElseThrow();
-        if (task.getStatus().equals("WAITING") | task.getStatus().equals("CLOSED"))
-        {
-            taskRepository.delete(task);
-            return new ResponseEntity<>(new OkResponse(String.format("Task '%s' has been removed", taskHeader), HttpStatus.OK ), HttpStatus.OK);
+    public ResponseEntity<?> deleteTask(String taskHeader) {
+        try {
+            Task task = findByHeader(taskHeader).orElseThrow();
+            if (task.getStatus().equals("WAITING") || task.getStatus().equals("CLOSED")) {
+                taskRepository.delete(task);
+                return new ResponseEntity<>(new OkResponse(String.format("Task '%s' has been removed", taskHeader), HttpStatus.OK), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(
+                    new AppError(400,
+                            String.format("You cant delete task '%s', status of task is %s", taskHeader, task.getStatus())), HttpStatus.BAD_REQUEST);
+        } catch (NoSuchElementException e) {
+            return new ResponseEntity<>(new AppError(400, "No such task!"), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(
-                new AppError(404,
-                String.format("You cant delete task '%s', status of task is %s", taskHeader, task.getStatus())), HttpStatus.BAD_REQUEST);
     }
 }

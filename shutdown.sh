@@ -2,4 +2,4 @@
 
 docker compose stop
 
-sudo mvn clean
+mvn clean

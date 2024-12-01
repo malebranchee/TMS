@@ -244,12 +244,12 @@ class AuthorizationTests {
     @Test
     public void UserController_changeAvailableTaskStatus_200()
     {
-        ChangeTaskStatusDTO dto = new ChangeTaskStatusDTO("IN_PROGRESS");
+        ChangeTaskStatusDTO dto = new ChangeTaskStatusDTO("CLOSED");
 
         HttpEntity<ChangeTaskStatusDTO> request = new HttpEntity<>(dto, setHeader(tokenUser_malebranche));
 
         ResponseEntity<OkResponse> response = testRestTemplate
-                .exchange("/api/v1/panel/task/header/change/status",
+                .exchange("/api/v1/panel/tasks/header/change/status",
                         HttpMethod.PUT,
                         request,
                         OkResponse.class);
@@ -266,7 +266,7 @@ class AuthorizationTests {
         HttpEntity<ChangeTaskPriorityDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
 
         ResponseEntity<TaskDto> response = testRestTemplate
-                .exchange("/api/v1/panel/admin/task/header/change/priority",
+                .exchange("/api/v1/panel/admin/tasks/header/change/priority",
                         HttpMethod.PUT,
                         request,
                         TaskDto.class);
@@ -282,7 +282,7 @@ class AuthorizationTests {
         HttpEntity<ChangeTaskPriorityDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
 
         ResponseEntity<AppError> response = testRestTemplate
-                .exchange("/api/v1/panel/admin/task/header/change/priority",
+                .exchange("/api/v1/panel/admin/tasks/header/change/priority",
                         HttpMethod.PUT,
                         request,
                         AppError.class);
@@ -298,7 +298,7 @@ class AuthorizationTests {
         HttpEntity<ChangeTaskDescriptionDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
 
         ResponseEntity<TaskDto> response = testRestTemplate
-                .exchange("/api/v1/panel/admin/task/header/change/description",
+                .exchange("/api/v1/panel/admin/tasks/header/change/description",
                         HttpMethod.PUT,
                         request,
                         TaskDto.class);
@@ -344,7 +344,7 @@ class AuthorizationTests {
         HttpEntity<ExecutorNamesDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
 
         ResponseEntity<TaskDto> response = testRestTemplate
-                .exchange("/api/v1/panel/admin/task/header/add/executors",
+                .exchange("/api/v1/panel/admin/tasks/Deploy/add/executors",
                         HttpMethod.PUT,
                         request,
                         TaskDto.class);
@@ -360,7 +360,7 @@ class AuthorizationTests {
         HttpEntity<CommentDto> request = new HttpEntity<>(commentDto, setHeader(tokenAdmin_pablo));
 
         ResponseEntity<OkResponse> response = testRestTemplate
-                .exchange("/api/v1/panel/task/header/add/comment",
+                .exchange("/api/v1/panel/tasks/Deploy/add/comment",
                         HttpMethod.POST,
                         request,
                         OkResponse.class);
@@ -374,13 +374,13 @@ class AuthorizationTests {
     {
         HttpEntity<?> request = new HttpEntity<>(setHeader(tokenAdmin_pablo));
         ResponseEntity<PageableDto> response = testRestTemplate
-                .exchange("/api/v1/panel/tasks/get/by/status?status=IN_PROGRESS",
+                .exchange("/api/v1/panel/tasks/get/by/status?status=CREATED",
                         HttpMethod.GET,
                         request,
                         PageableDto.class);
         response.getBody().getObjectList().forEach(log::info);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assertions.assertTrue(response.getBody().getObjectList().stream().anyMatch(o -> o.contains("IN_PROGRESS")));
+        Assertions.assertTrue(response.getBody().getObjectList().stream().anyMatch(o -> o.contains("CREATED")));
 
     }
 
@@ -396,7 +396,7 @@ class AuthorizationTests {
         HttpEntity<ExecutorNamesDTO> request = new HttpEntity<>(dto, setHeader(tokenAdmin_pablo));
 
         ResponseEntity<TaskDto> response = testRestTemplate
-                .exchange("/api/v1/panel/admin/task/header/remove/executors",
+                .exchange("/api/v1/panel/admin/tasks/header/remove/executors",
                         HttpMethod.DELETE,
                         request,
                         TaskDto.class);
@@ -418,5 +418,35 @@ class AuthorizationTests {
         response.getBody().getObjectList().forEach(log::info);
         Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assertions.assertTrue(response.getBody().getObjectList().stream().anyMatch(o -> o.contains("LOW")));
+    }
+
+    @Order(22)
+    @Test
+    public void deleteTaskByAdmin_200()
+    {
+        HttpEntity<?> request = new HttpEntity<>(setHeader(tokenAdmin_pablo));
+        ResponseEntity<OkResponse> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/tasks/header/remove/task",
+                        HttpMethod.DELETE,
+                        request,
+                        OkResponse.class);
+        log.info(response.getBody().getMessage());
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertFalse(taskRepository.findByHeader("header").isPresent());
+    }
+
+    @Order(23)
+    @Test
+    public void deleteTaskByAdmin_400()
+    {
+        HttpEntity<?> request = new HttpEntity<>(setHeader(tokenAdmin_pablo));
+        ResponseEntity<AppError> response = testRestTemplate
+                .exchange("/api/v1/panel/admin/tasks/header/remove/task",
+                        HttpMethod.DELETE,
+                        request,
+                        AppError.class);
+        log.info(response.getBody().getMessage());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        Assertions.assertFalse(taskRepository.findByHeader("header").isPresent());
     }
 }

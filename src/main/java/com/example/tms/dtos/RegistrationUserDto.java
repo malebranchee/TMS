@@ -19,7 +19,7 @@ public class RegistrationUserDto {
     @NotBlank(message = "Login field could not be empty or blanked!")
     private String login;
 
-    @Schema(description = "Nickname of new user (do not confuse with login!). Used for interaction with tasks.", minLength = 4, maxLength = 30, example = "pablo", defaultValue = "pablo", nullable = false)
+    @Schema(description = "Nickname of new user (do not confuse with login!). Used for interaction with tasks. Used custom validator", minLength = 4, maxLength = 30, example = "pablo", defaultValue = "pablo", nullable = false)
     @NotBlank(message = "Nickname field could not be empty or blanked!")
     @Size(min = 4, max = 30, message = "Minimal nickname length - 4 characters, maximum - 15")
     @ConstraintNicknameValidator
