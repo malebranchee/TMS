@@ -8,6 +8,7 @@ import com.example.tms.repository.TaskRepository;
 import com.example.tms.repository.entities.Comment;
 import com.example.tms.repository.entities.Task;
 import com.example.tms.repository.entities.User;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.util.*;
-
 
 @Service
 @AllArgsConstructor
@@ -29,18 +29,39 @@ public class TaskService {
     @Autowired
     private CommentRepository commentRepository;
 
+    /**
+     *
+     * @param header String of header
+     * @return Optionally Task object
+     * @throws NoSuchElementException
+     */
     Optional<Task> findByHeader(String header) {
         return taskRepository.findByHeader(header);
     }
 
+    /**
+     *
+     * @return List of tasks
+     */
     List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
+    /**
+     *
+     * Adds task to the database
+     */
     void save(Task task) {
         taskRepository.save(task);
     }
 
+    /**
+     *
+     * @param status Requested status value
+     * @param pageable Pageable parameter, containing: num of page, size of page
+     *  @return ResponseEntity
+     */
+    @Transactional
     public ResponseEntity<?> searchTasksByStatus(String status, Pageable pageable)
     {
         return
@@ -50,6 +71,13 @@ public class TaskService {
                 : new ResponseEntity<>(new PageableDto(getAllTasks().stream().map(Task::toString).toList()), HttpStatus.OK);
     }
 
+    /**
+     *
+     * @param priority Requested priority values
+     * @param pageable Pageable parameter, containing: num of page, size of page
+     * @return ResponseEntity
+     */
+    @Transactional
     public ResponseEntity<?> searchTasksByPriority(String priority, Pageable pageable)
     {
         return
@@ -59,6 +87,13 @@ public class TaskService {
                 : new ResponseEntity<>(new PageableDto(getAllTasks().stream().map(Task::toString).toList()), HttpStatus.OK);
     }
 
+    /**
+     *
+     * @param principal Current user credentials
+     * @param pageable Pageable parameter, containing: num of page, size of page
+     * @return ResponseEntity
+     */
+    @Transactional
     public ResponseEntity<?> showMyTasksToDo(Principal principal, Pageable pageable) {
         User user = userService.findByLogin(principal.getName()).orElseThrow(
                 () -> new UsernameNotFoundException("No such user!"));
@@ -68,6 +103,13 @@ public class TaskService {
         return getResponseByPageable(pageable, user);
     }
 
+
+    /**
+     * @param nickname Requested nickname value
+     * @param pageable Pageable parameter, containing: num of page, size of page
+     * @return ResponseEntity
+     */
+    @Transactional
     public ResponseEntity<?> showAllTasksOfUser(String nickname, Pageable pageable) {
 
         User user = userService.findByNickname(nickname).orElseThrow(() -> new NoSuchElementException(
@@ -76,6 +118,12 @@ public class TaskService {
         return getResponseByPageable(pageable, user);
     }
 
+
+    /**
+     * @param user User which task need to parse
+     * @param pageable Pageable parameter, containing: num of page, size of page
+     * @return ResponseEntity
+     */
     private ResponseEntity<?> getResponseByPageable(Pageable pageable, User user) {
         return new ResponseEntity<>(new OkResponse("Tasks to do: \n%s\n Tasks to manage: %s".formatted(
                 new PageableDto("MyTasks", pageable.getPageNumber(), pageable.getPageSize(),
@@ -88,6 +136,13 @@ public class TaskService {
                         .map(Task::toString).toList()).toString()), HttpStatus.OK), HttpStatus.OK);
     }
 
+    /**
+     * @param principal Current user credentials
+     * @param taskHeader Requested header value
+     * @param dto Requested change status data object
+     * @return ResponseEntity
+     */
+    @Transactional
     public ResponseEntity<?> changeTaskStatus(Principal principal, String taskHeader, ChangeTaskStatusDTO dto) {
         try {
             User user = userService.findByLogin(principal.getName()).orElseThrow(() ->
@@ -111,6 +166,13 @@ public class TaskService {
         }
     }
 
+    /**
+     * @param principal Current user credentials
+     * @param taskHeader Requested task value
+     * @param dto Requested dto to change comment fields
+     * @return ResponseEntity<T>
+     */
+    @Transactional
     public ResponseEntity<?> addComment(Principal principal, String taskHeader, CommentDto dto) {
         try {
             User user = userService.findByLogin(principal.getName()).orElseThrow();
@@ -134,6 +196,12 @@ public class TaskService {
         }
     }
 
+    /**
+     * @param principal Current user credentials
+     * @param taskDto Requested body of task
+     * @return ResponseEntity<T>
+     */
+    @Transactional
     public ResponseEntity<?> createTask(Principal principal, TaskDto taskDto) {
         try {
             User user = userService.findByLogin(principal.getName()).orElseThrow();
@@ -169,6 +237,12 @@ public class TaskService {
         }
     }
 
+    /**
+     * @param taskHeader Requested task string
+     * @param dto Requested data object
+     * @return ResponseEntity<T>
+     */
+    @Transactional
     public ResponseEntity<?> changePriority(String taskHeader, ChangeTaskPriorityDTO dto)
     {
         try {
@@ -191,6 +265,12 @@ public class TaskService {
         }
     }
 
+    /**
+     * @param taskHeader Requested task string
+     * @param dto Requested dto data object
+     * @return ResponseEntity<T>
+     */
+    @Transactional
     public ResponseEntity<?> changeDescription(String taskHeader, ChangeTaskDescriptionDTO dto)
     {
         Task task = findByHeader(taskHeader).orElseThrow(() -> new NoSuchElementException(String.format("Task with such header '%s' doesnt exist", taskHeader)));
@@ -205,6 +285,12 @@ public class TaskService {
         }
     }
 
+    /**
+     * @param taskHeader Requested task string
+     * @param dto Requested dto data object
+     * @return ResponseEntity<T>
+     */
+    @Transactional
     public ResponseEntity<?> addExecutors(String taskHeader, ExecutorNamesDTO dto)
     {
         try{
@@ -229,6 +315,12 @@ public class TaskService {
         }
     }
 
+    /**
+     * @param taskHeader Requested task string
+     * @param dto Requested dto data object
+     * @return ResponseEntity<T>
+     */
+    @Transactional
     public ResponseEntity<?> deleteExecutors(String taskHeader, ExecutorNamesDTO dto)
     {
         try{
@@ -254,6 +346,12 @@ public class TaskService {
         }
     }
 
+    /**
+     *
+     * @param taskHeader Requested task string
+     * @return ResponseEntity<T>
+     */
+    @Transactional
     public ResponseEntity<?> deleteTask(String taskHeader) {
         try {
             Task task = findByHeader(taskHeader).orElseThrow();

@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
+/**
+ * Secret controller for checking
+ * @apiNote NOT INTENDED FOR PRODUCTION USING!
+ */
 @SecurityRequirement(name = "Bearer Authentication")
 @RestController
 @RequestMapping("/api/v1/panel/secreto4ka")
@@ -27,6 +31,10 @@ public class SecretkaAdmina {
     @Autowired
     private UserService userService;
 
+    /**
+     *
+     * @param principal Current user credentials
+     */
     @Operation(description = "Секреточка для проверки функционала админа." +
             " Для выдачи роли админа нужно быть авторизованым под логином 'lil-dozhd@mail.ru'")
     @PutMapping

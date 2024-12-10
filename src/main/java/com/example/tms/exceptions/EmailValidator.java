@@ -3,6 +3,9 @@ package com.example.tms.exceptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+/**
+ * Additional validator for email
+ */
 @Component
 public class EmailValidator {
     @Bean

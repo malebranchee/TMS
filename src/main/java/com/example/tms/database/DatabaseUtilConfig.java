@@ -15,6 +15,9 @@ public class DatabaseUtilConfig implements CommandLineRunner {
         this.dataSource = dataSource;
     }
 
+    /**
+     * Initializes database tables before each application startup
+     */
     @Override
     public void run(String... args) throws Exception {
         try(Connection connection = dataSource.getConnection();

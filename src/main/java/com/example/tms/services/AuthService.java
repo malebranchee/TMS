@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.HashMap;
 
+/**
+ * @return ResponseEntity<?>
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -27,6 +30,11 @@ public class AuthService {
     private final DaoAuthenticationProvider daoAuthenticationProvider;
 
 
+    /**
+     *
+     * @param authRequest  JWT request body
+     *
+     */
     public ResponseEntity<?> createAuthToken(@RequestBody JwtRequest authRequest) {
         try {
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(authRequest.getLogin(),
@@ -43,6 +51,10 @@ public class AuthService {
         return ResponseEntity.ok(new JwtResponse(token, refreshToken));
     }
 
+    /**
+     *
+     * @param refreshTokenRequest Refresh JWT body
+     */
     public ResponseEntity<?> refreshToken(RefreshTokenDto refreshTokenRequest) {
         UserDetails userDetails = userService.loadUserByUsername(jwtUtils.getUsername(
                 refreshTokenRequest.getToken()
@@ -56,6 +68,10 @@ public class AuthService {
         return new ResponseEntity<>(new AppError("Wrong access!"), HttpStatusCode.valueOf(403));
     }
 
+    /**
+     *
+     * @param registrationUserDto User registration data class
+     */
     public ResponseEntity<?> createNewUser(@RequestBody RegistrationUserDto registrationUserDto) {
         if (!registrationUserDto.getPassword().equals(registrationUserDto.getConfirmPassword())) {
             return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(),

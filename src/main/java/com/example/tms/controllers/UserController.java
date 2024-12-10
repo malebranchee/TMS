@@ -16,6 +16,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
+/**
+ * User panel controller
+ */
 @Tag(name = "UserTaskController", description = "Provides functions to user with role USER")
 @ApiResponse(responseCode = "400", description = "Invalid or not existing value.")
 @ApiResponse(responseCode = "401", description = "More likely wrong url, not enough authorities")
@@ -31,6 +34,12 @@ public class UserController {
     @Autowired
     private final TaskService taskService;
 
+    /**
+     * Request on showing all tasks to do and to manage
+     * @param principal Current user credentials
+     * @param page num of page
+     * @param size size of page
+     */
     @Operation(summary = "Getting all tasks of current user", description = "Return all tasks of current user in pagination.")
     @GetMapping("/tasks/get/my")
     public ResponseEntity<?> showMyTasksToDo(Principal principal,
@@ -43,7 +52,12 @@ public class UserController {
         return taskService.showMyTasksToDo(principal, PageRequest.of(page, size));
     }
 
-
+    /**
+     * Request on getting all tasks of user with nickname
+     * @param nickname Requested nickname
+     * @param page num of page
+     * @param size size of page
+     */
     @Operation(summary = "Getting all tasks of user", description = "Return all tasks of @PathVariable parameter user nickname")
     @GetMapping("/tasks/get/of/{nickname}")
     public ResponseEntity<?> showTasksOfUser(
@@ -57,6 +71,12 @@ public class UserController {
         return taskService.showAllTasksOfUser(nickname, PageRequest.of(page, size));
     }
 
+    /**
+     * Request on changing task status
+     * @param principal Current user credentials
+     * @param taskHeader Requested header string
+     * @param dto Requested dto data object
+     */
     @Operation(summary = "Changing task status", description = "Put request to @PathVariable task header for changing task status.")
     @PutMapping("/tasks/{taskHeader}/change/status")
     public ResponseEntity<?> changeTaskStatus(Principal principal,
@@ -69,6 +89,12 @@ public class UserController {
         return taskService.changeTaskStatus(principal, taskHeader, dto);
     }
 
+    /**
+     * Request on adding of comment
+     * @param principal Current user credentials
+     * @param taskHeader Requested header string
+     * @param dto Requested dto data object
+     */
     @Operation(summary = "Adding comment to task", description = "Post request to @PathVariable task header for adding new comment.")
     @PostMapping("/tasks/{taskHeader}/add/comment")
     public ResponseEntity<?> addComment(Principal principal,
@@ -80,6 +106,12 @@ public class UserController {
         return taskService.addComment(principal, taskHeader, dto);
     }
 
+    /**
+     * Request to get tasks by status
+     * @param status Requested task status
+     * @param page num of page
+     * @param size size of page
+     */
     @Operation(summary = "Paging and filtering tasks by status", description = "If 'status' not mentioned, returns all tasks")
     @GetMapping("/tasks/get/by/status")
     public ResponseEntity<?> getTasksByStatus(
@@ -95,6 +127,12 @@ public class UserController {
         return taskService.searchTasksByStatus(status, PageRequest.of(page, size));
     }
 
+    /**
+     * Request to get all tasks by priority
+     * @param priority Requested priority string
+     * @param page num of page
+     * @param size size of page
+     */
     @Operation(summary = "Paging and filtering tasks by priority", description = "If 'priority' not mentioned, returns all tasks")
     @GetMapping("/tasks/get/by/priority")
     public ResponseEntity<?> getTasksByPriority(

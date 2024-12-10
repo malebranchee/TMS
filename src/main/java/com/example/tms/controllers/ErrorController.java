@@ -14,6 +14,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.net.HttpRetryException;
 import java.util.NoSuchElementException;
 
+/**
+ * Default exception controller
+ */
 @Tag(name = "Exceptions controller", description = "Provides handlers for many available cases.")
 @ControllerAdvice
 public class ErrorController {

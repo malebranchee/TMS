@@ -3,7 +3,6 @@ package com.example.tms.repository.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -11,7 +10,8 @@ import java.util.List;
 
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "comments")
 @SequenceGenerator(name = "comment_seq", sequenceName = "comment_id_seq", allocationSize = 1)
 public class Comment {

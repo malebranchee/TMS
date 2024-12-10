@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
 
-
+/**
+ * Admin panel controller
+ *
+ */
 @Tag(name = "Admin task controller", description = "Provides full access to tasks for users with role ADMIN")
 @ApiResponse(responseCode = "400", description = "Invalid or not existing value.")
 @ApiResponse(responseCode = "401", description = "More likely wrong url, not enough authorities")
@@ -33,6 +36,11 @@ import java.security.Principal;
 public class AdminController {
     private final TaskService taskService;
 
+    /**
+     *
+     * Create request on creating of task
+     * @see TaskService
+     */
     @Operation(summary = "Creates new task", description = "Return 200 if ok, else return 400 (no such user, such task exists, no such priority)")
     @PostMapping("/tasks/create")
     public ResponseEntity<?> createTask(
@@ -44,6 +52,11 @@ public class AdminController {
         return taskService.createTask(principal, taskDto);
     }
 
+    /**
+     *
+     * Create request on changing task priority
+     * @see TaskService
+     */
     @Operation(summary = "Changes task priority", description = "Return 200 if ok, else return 400 (no such task, priority)")
     @PutMapping("/tasks/{taskHeader}/change/priority")
     public ResponseEntity<?> changePriority(
@@ -57,6 +70,11 @@ public class AdminController {
         return taskService.changePriority(taskHeader, dto);
     }
 
+    /**
+     *
+     * Create request on changing task description
+     * @see TaskService
+     */
     @Operation(summary = "Changes task description", description = "Return 200 if ok, else return 400 (no such task")
     @PutMapping("/tasks/{taskHeader}/change/description")
     public ResponseEntity<?> changeDescription(
@@ -71,6 +89,11 @@ public class AdminController {
         return taskService.changeDescription(taskHeader, dto);
     }
 
+    /**
+     *
+     * Create request on adding executors to task
+     * @see TaskService
+     */
     @Operation(summary = "Adds executors to the task", description = "If status of task 'WAITING' or 'CLOSED' then status sets up in 'IN_PROGRESS'")
     @PutMapping("/tasks/{taskHeader}/add/executors")
     public ResponseEntity<?> addExecutors(
@@ -82,6 +105,11 @@ public class AdminController {
         return taskService.addExecutors(taskHeader, dto);
     }
 
+    /**
+     *
+     * Create request on removing executors from task
+     * @see TaskService
+     */
     @Operation(summary = "Removes executors from the task", description = "If after removing, executor list is empty, then status sets up 'WAITING'")
     @DeleteMapping("/tasks/{taskHeader}/remove/executors")
     public ResponseEntity<?> removeExecutors(
@@ -94,6 +122,11 @@ public class AdminController {
         return taskService.deleteExecutors(taskHeader, dto);
     }
 
+    /**
+     *
+     * Create request on removing of task
+     * @see TaskService
+     */
     @Operation(summary = "Removes task", description = "Removes task if its status is 'WAITING' or 'CLOSED', return OK, else return BAD REQUEST")
     @DeleteMapping("/tasks/{taskHeader}/remove/task")
     public ResponseEntity<?> removeTask(

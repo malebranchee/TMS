@@ -19,20 +19,41 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final RoleService roleService;
 
+    /**
+     *
+     * @param username Requested login by which need to find entity
+     * @return User
+     *
+     */
     public Optional<User> findByLogin(String username)
     {
         return userRepository.findByLogin(username);
     }
 
+    /**
+     *
+     * @param nickname Requested nickname by which need to find entity
+     * @return User
+     *
+     */
     public Optional<User> findByNickname(String nickname)
     {
         return userRepository.findByNickname(nickname);
     }
 
+    /**
+     *
+     * @param user User needs to be saved in database
+     */
     public void save(User user) {
         userRepository.save(user);
     }
 
+    /**
+     *
+     * @param registrationUserDto New user data object
+     * @return User
+     */
     public User save(RegistrationUserDto registrationUserDto) {
         User user = new User();
         user.setLogin(registrationUserDto.getLogin());
@@ -42,6 +63,11 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
+    /**
+     *
+     * @param login Requested login by which need to check if user exists
+     * @return true: if users not exists, false: if one exists
+     */
     public boolean ifUserNotExists(String login)
     {
         try{
@@ -53,6 +79,13 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    /**
+     *
+     * @param username Requested username (login) by which need to load user
+     * @return UserDetails - User credentials management class
+     * @see UserDetails Returned class
+     * @throws UsernameNotFoundException
+     */
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

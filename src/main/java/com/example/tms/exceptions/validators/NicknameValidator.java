@@ -3,6 +3,9 @@ package com.example.tms.exceptions.validators;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
+/**
+ * Checks user nickname on validation.
+ */
 public class NicknameValidator implements ConstraintValidator<ConstraintNicknameValidator, String> {
 
     @Override

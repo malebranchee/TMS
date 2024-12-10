@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * JWT util class
+ */
 @Component
 public class JwtUtils {
     @Value("${jwt.secret}")
@@ -28,6 +31,11 @@ public class JwtUtils {
     @Value("${rt.lifetime}")
     private Duration rtLifetime;
 
+    /**
+     * Generates token based on users authorities
+     * @param userDetails Details of user
+     * @return Bearer token
+     */
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         List<String> rolesList = userDetails.getAuthorities().stream()
@@ -46,15 +54,32 @@ public class JwtUtils {
                 .compact();
     }
 
+    /**
+     *
+     * @param token Requested bearer token
+     * @param userDetails User details
+     * @return true: if token is valid, false: token is not valid
+     */
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = getUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
+    /**
+     * Check token expiration
+     * @param token Requested token
+     * @return true: token is expired, false: token is not expired
+     */
     private boolean isTokenExpired(String token) {
         return getAllClaimsFromToken(token).getExpiration().before(new Date());
     }
 
+    /**
+     *
+     * @param extraClaims
+     * @param userDetails
+     * @return refresh token
+     */
     public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         Date issuedDate = new Date();
         Date expiredDate = new Date(issuedDate.getTime() + rtLifetime.toMillis());
@@ -67,6 +92,11 @@ public class JwtUtils {
                 .compact();
     }
 
+    /**
+     *
+     * @param token Requested token
+     * @return all claims of token (duration, user authorities)
+     */
     private Claims getAllClaimsFromToken(String token) {
         SecretKey secretKey = new SecretKeySpec(this.secret.getBytes(StandardCharsets.UTF_8),
                 io.jsonwebtoken.SignatureAlgorithm.HS256.getJcaName());
@@ -75,14 +105,28 @@ public class JwtUtils {
                 .build().parseSignedClaims(token).getPayload();
     }
 
+    /**
+     *
+     * @param token Requested token
+     * @return username
+     */
     public String getUsername(String token) {
         return getAllClaimsFromToken(token).getSubject();
     }
 
+    /**
+     *
+     * @param token Requested token
+     * @return List of roles of user
+     */
     public List<String> getRoles(String token) {
         return getAllClaimsFromToken(token).get("roles", List.class);
     }
 
+    /**
+     *
+     * @return encoded secret key
+     */
     private Key getSigningKey() {
         byte[] keyBytes = this.secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);

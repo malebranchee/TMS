@@ -2,12 +2,15 @@ package com.example.tms.repository.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "tasks")
 @AllArgsConstructor
 @SequenceGenerator(name = "task_seq", sequenceName = "task_id_seq", allocationSize = 1)
@@ -16,18 +19,14 @@ public class Task {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_seq")
     private Long id;
 
-
     @Column(name = "header")
     private String header;
-
 
     @Column(name = "description")
     private String description;
 
-
     @Column(name = "status")
     private String status;
-
 
     @Column(name = "priority")
     private String priority;

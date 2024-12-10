@@ -3,6 +3,9 @@ package com.example.tms.exceptions;
 import lombok.Data;
 import java.util.Date;
 
+/**
+ * Default application error data class
+ */
 @Data
 public class AppError {
     private int status;
