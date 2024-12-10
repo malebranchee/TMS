@@ -3,9 +3,11 @@ package com.example.tms.repository;
 import com.example.tms.repository.entities.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.Optional;
 
+/**
+ * User repository
+ */
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
     Optional<User> findByLogin(String username);

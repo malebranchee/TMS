@@ -6,6 +6,9 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * Pageable data class
+ */
 @Data
 @AllArgsConstructor
 public class PageableDto {

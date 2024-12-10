@@ -9,6 +9,9 @@ import java.time.format.FormatStyle;
 import java.util.List;
 
 
+/**
+ * Comment entity
+ */
 @Entity
 @Getter
 @Setter

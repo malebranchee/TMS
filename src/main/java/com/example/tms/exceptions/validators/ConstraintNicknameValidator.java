@@ -5,6 +5,9 @@ import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
+/**
+ * Custom nickname validator interface
+ */
 @Documented
 @Constraint(validatedBy = NicknameValidator.class)
 @Target( { ElementType.METHOD, ElementType.FIELD })

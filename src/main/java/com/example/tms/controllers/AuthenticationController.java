@@ -14,6 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Authentication controller
+ */
 @Tag(name = "Authentication&Registration controller", description = "Provides access to registration and authentication methods. Refresh token functional not tested!!!")
 @ApiResponse(responseCode = "400", description = "Invalid or not existing value.")
 @ApiResponse(responseCode = "401", description = "Wrong login or password")
@@ -27,6 +30,11 @@ public class AuthenticationController {
     private final AuthService authService;
     private final EmailValidator emailValidator;
 
+    /**
+     *
+     * @param authRequest Requested jwt
+     * @see AuthService
+     */
     @Operation(summary = "Authentication method", description = "Returns access token in response body")
     @PostMapping("/auth")
     public ResponseEntity<?> authorizeUser(
@@ -39,6 +47,11 @@ public class AuthenticationController {
         return authService.createAuthToken(authRequest);
     }
 
+    /**
+     *
+     * @param refreshTokenRequest Request of JWT refresh
+     * @see AuthService
+     */
     @Operation(summary = "Refreshing token method", description = "Refreshes access token")
     @PostMapping("/refresh")
     public ResponseEntity<?> refreshToken(
@@ -50,6 +63,11 @@ public class AuthenticationController {
         return authService.refreshToken(refreshTokenRequest);
     }
 
+    /**
+     *
+     * @param registrationUserDto Requested registration data object
+     * @see AuthService
+     */
     @Operation(summary = "User registration method", description = "Creates new user with role USER." +
             "Return 201 if ok, else return 400 (password mismatch, exists user, not validated data")
     @PostMapping("/registration")

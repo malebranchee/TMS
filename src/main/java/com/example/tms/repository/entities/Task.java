@@ -8,6 +8,9 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Task entity
+ */
 @Entity
 @Getter
 @Setter

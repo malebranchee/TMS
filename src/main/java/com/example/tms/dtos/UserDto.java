@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.io.Serializable;
 
+/**
+ * Default user presentation data class
+ */
 @Data
 @AllArgsConstructor
 public class UserDto implements Serializable {

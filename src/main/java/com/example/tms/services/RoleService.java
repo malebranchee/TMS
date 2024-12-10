@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 
+/**
+ * Role service for interaction with Roles of Users
+ */
 @Service
 @AllArgsConstructor
 public class RoleService {
@@ -14,7 +17,7 @@ public class RoleService {
 
     /**
      * @return Role entity
-     * @throws java.util.NoSuchElementException
+     *
      */
     public Optional<Role> findByName(String role)
     {

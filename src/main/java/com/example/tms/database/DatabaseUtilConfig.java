@@ -7,6 +7,9 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Statement;
 
+/**
+ * Default database initializer
+ */
 @Component
 public class DatabaseUtilConfig implements CommandLineRunner {
 

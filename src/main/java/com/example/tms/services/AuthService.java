@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.HashMap;
 
+
 /**
- * @return ResponseEntity<?>
+ * Authentication service for interaction with User authentication
+ *
  */
 @Service
 @RequiredArgsConstructor

@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * JWT request data class
+ */
 @Schema(description = "JWT token request body. Payload that will be sent to server.")
 @Data
 @AllArgsConstructor

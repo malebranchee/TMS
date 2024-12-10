@@ -8,7 +8,9 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-
+/**
+ * Registration of user data class
+ */
 @Schema(description = "DTO that will be sent to the server to authorize user authorities")
 @Data
 @AllArgsConstructor

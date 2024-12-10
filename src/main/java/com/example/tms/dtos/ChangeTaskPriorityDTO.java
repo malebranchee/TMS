@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * Task Priority Data Class
+ */
 @Data
 @AllArgsConstructor
 public class ChangeTaskPriorityDTO {

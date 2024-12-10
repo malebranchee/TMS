@@ -5,6 +5,9 @@ import lombok.*;
 
 import java.util.List;
 
+/**
+ * Role entity
+ */
 @Entity
 @Table(name = "roles")
 @AllArgsConstructor

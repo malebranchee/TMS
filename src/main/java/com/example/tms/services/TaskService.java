@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.util.*;
 
+/**
+ * Task service for interaction with tasks
+ */
 @Service
 @AllArgsConstructor
 public class TaskService {
@@ -33,7 +36,7 @@ public class TaskService {
      *
      * @param header String of header
      * @return Optionally Task object
-     * @throws NoSuchElementException
+     *
      */
     Optional<Task> findByHeader(String header) {
         return taskRepository.findByHeader(header);
@@ -170,7 +173,7 @@ public class TaskService {
      * @param principal Current user credentials
      * @param taskHeader Requested task value
      * @param dto Requested dto to change comment fields
-     * @return ResponseEntity<T>
+     * @return ResponseEntity
      */
     @Transactional
     public ResponseEntity<?> addComment(Principal principal, String taskHeader, CommentDto dto) {
@@ -199,7 +202,7 @@ public class TaskService {
     /**
      * @param principal Current user credentials
      * @param taskDto Requested body of task
-     * @return ResponseEntity<T>
+     * @return ResponseEntity
      */
     @Transactional
     public ResponseEntity<?> createTask(Principal principal, TaskDto taskDto) {
@@ -240,7 +243,7 @@ public class TaskService {
     /**
      * @param taskHeader Requested task string
      * @param dto Requested data object
-     * @return ResponseEntity<T>
+     * @return ResponseEntity
      */
     @Transactional
     public ResponseEntity<?> changePriority(String taskHeader, ChangeTaskPriorityDTO dto)
@@ -268,7 +271,7 @@ public class TaskService {
     /**
      * @param taskHeader Requested task string
      * @param dto Requested dto data object
-     * @return ResponseEntity<T>
+     * @return ResponseEntity
      */
     @Transactional
     public ResponseEntity<?> changeDescription(String taskHeader, ChangeTaskDescriptionDTO dto)
@@ -288,7 +291,7 @@ public class TaskService {
     /**
      * @param taskHeader Requested task string
      * @param dto Requested dto data object
-     * @return ResponseEntity<T>
+     * @return ResponseEntity
      */
     @Transactional
     public ResponseEntity<?> addExecutors(String taskHeader, ExecutorNamesDTO dto)
@@ -318,7 +321,7 @@ public class TaskService {
     /**
      * @param taskHeader Requested task string
      * @param dto Requested dto data object
-     * @return ResponseEntity<T>
+     * @return ResponseEntity
      */
     @Transactional
     public ResponseEntity<?> deleteExecutors(String taskHeader, ExecutorNamesDTO dto)
@@ -349,7 +352,7 @@ public class TaskService {
     /**
      *
      * @param taskHeader Requested task string
-     * @return ResponseEntity<T>
+     * @return ResponseEntity
      */
     @Transactional
     public ResponseEntity<?> deleteTask(String taskHeader) {

@@ -3,6 +3,10 @@ package com.example.tms.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * Secret class
+ * @deprecated Marked for removal in production
+ */
 @AllArgsConstructor
 @Data
 public class SecretAdminInitDTO {

@@ -18,7 +18,8 @@ import java.security.Principal;
 
 /**
  * Secret controller for checking
- * @apiNote NOT INTENDED FOR PRODUCTION USING!
+ * NOT INTENDED FOR PRODUCTION USING!
+ * @deprecated Marked for removal in production
  */
 @SecurityRequirement(name = "Bearer Authentication")
 @RestController

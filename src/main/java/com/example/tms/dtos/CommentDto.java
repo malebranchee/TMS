@@ -4,6 +4,9 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * Task comment Data Class
+ */
 @Data
 @AllArgsConstructor
 public class CommentDto {

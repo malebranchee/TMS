@@ -14,6 +14,9 @@ import lombok.ToString;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Default task presentation data class
+ */
 @Schema(name = "Task request entity")
 @Data
 @AllArgsConstructor
